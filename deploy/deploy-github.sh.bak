@@ -1,0 +1,43 @@
+function release_to_github () {
+	# Using the tool from https://github.com/aktau/github-release
+
+	GITHUB_TOKEN_FILE="${HOME}/.config/github-api-token"
+	GITHUB_TOKEN=$(cat "${GITHUB_TOKEN_FILE}")
+	RELEASE_MESSAGE=$(printf "Changes in this version:\n${RELEASE_CHANGEINFO_NEWS}")
+
+	PRE_RELEASE_LABEL="--pre-release"
+	if [ "${RELEASE_TYPE}" == "stable" ]; then
+		PRE_RELEASE_LABEL=""
+	fi
+
+	if [ "x${GITHUB_TOKEN}" == "x" ]; then
+		echo "No GITHUB_TOKEN found in environment, you can manually upload the binaries"
+	else
+		github-release release ${PRE_RELEASE_LABEL} \
+			--tag "v${RELEASE_VERSION}-${RELEASE_NAME}"  \
+			--name "v${RELEASE_VERSION}-${RELEASE_NAME}" \
+			--repo "duplicati" \
+			--user "duplicati" \
+			--security-token "${GITHUB_TOKEN}" \
+			--description "${RELEASE_MESSAGE}" \
+
+		github-release upload \
+			--tag "v${RELEASE_VERSION}-${RELEASE_NAME}"  \
+			--name "${RELEASE_FILE_NAME}.zip" \
+			--repo "duplicati" \
+			--user "duplicati" \
+			--security-token "${GITHUB_TOKEN}" \
+			--file "${UPDATE_TARGET}/${RELEASE_FILE_NAME}.zip"
+
+        for FILE in $(ls ${INSTALLERS_TARGET_FOLDER}); do
+            github-release upload \
+                --tag "v${VERSION}-${BUILDTAG_RAW}"  \
+                --name "${FILE}" \
+                --repo "duplicati" \
+                --user "duplicati" \
+                --security-token "${GITHUB_TOKEN}" \
+                --file "${UPDATE_TARGET}/${FILE}"
+	done
+	fi
+}
+
