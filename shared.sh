@@ -138,9 +138,9 @@ function sync_and_use_installer_cache () {
   export WORKING_DIR=$(cd "$INSTALLER_CACHE";pwd -P)
 }
 
-function pull_minimal_docker_image () {
+function pull_docker_image () {
   travis_mark_begin "PULL MINIMAL DOCKER IMAGE"
-  docker pull debian:jessie-slim
+  docker pull $DOCKER_IMAGE
   travis_mark_end "PULL MINIMAL DOCKER IMAGE"
 }
 
@@ -159,14 +159,9 @@ function pull_mono_docker_image () {
   travis_mark_end "PULL MONO DOCKER IMAGE"
 }
 
-function run_with_minimal_docker () {
+function run_with_docker () {
   docker run -e WORKING_DIR="$WORKING_DIR" -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "${WORKING_DIR}:/duplicati" --rm debian:jessie-slim /bin/bash -c "cd /duplicati;$1"
-}
-
-function run_with_mono_docker () {
-  docker run -e WORKING_DIR="$WORKING_DIR" -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "${WORKING_DIR}:/duplicati" --rm mono /bin/bash -c "cd /duplicati;$1"
+  -v "${WORKING_DIR}:/duplicati" --rm $DOCKER_IMAGE /bin/bash -c "cd /duplicati;$1"
 }
 
 function parse_options () {
@@ -193,6 +188,10 @@ function parse_options () {
         RELEASE_TYPE="$2"
         shift
         ;;
+      --dockerimage)
+        DOCKER_IMAGE="$2"
+        shift
+        ;;
       --installers)
         INSTALLERS="$2"
         FORWARD_OPTS="$FORWARD_OPTS $1 $2"
@@ -204,6 +203,11 @@ function parse_options () {
     		;;
       --data)
         TEST_DATA=$2
+        shift
+        ;;
+      --gittag)
+        GIT_TAG=$2
+        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
         shift
         ;;
       --categories)
@@ -230,8 +234,9 @@ function parse_options () {
 	UPDATE_SOURCE="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_source-${RELEASE_VERSION}"
   UPDATE_TARGET="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_target-${RELEASE_VERSION}"
   ZIPFILE="${UPDATE_TARGET}/${RELEASE_FILE_NAME}.zip"
-  BUILDTAG_RAW=$(echo "${RELEASE_FILE_NAME}" | cut -d "." -f 1-4 | cut -d "-" -f 2-4)
-  BUILDTAG="${BUILDTAG_RAW//-}"
+#  BUILDTAG_RAW=$(echo "${RELEASE_FILE_NAME}" | cut -d "." -f 1-4 | cut -d "-" -f 2-4)
+  BUILDTAG="${RELEASE_TYPE}_${RELEASE_TIMESTAMP}_${GIT_TAG}"
+  BUILDTAG=${BUILDTAG//-}
   AUTHENTICODE_PFXFILE="${HOME}/.config/signkeys/Duplicati/authenticode.pfx"
   AUTHENTICODE_PASSWORD="${HOME}/.config/signkeys/Duplicati/authenticode.key"
   GPG_KEYFILE="${HOME}/.config/signkeys/Duplicati/updater-gpgkey.key"

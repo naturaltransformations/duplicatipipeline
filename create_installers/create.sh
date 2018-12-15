@@ -36,7 +36,7 @@ parse_options "$@"
 
 for type in $(echo $INSTALLERS | sed "s/,/ /g"); do
 	echo $type
-	${SCRIPT_DIR}/installers-${type}.sh
+	${SCRIPT_DIR}/installers-${type}.sh $FORWARD_OPTS
 done
 
 if [ $SIGNED = true ]; then
