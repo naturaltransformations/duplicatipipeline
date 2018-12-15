@@ -1,6 +1,14 @@
 
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/utils.sh"
+. "${SCRIPT_DIR}/../shared.sh"
+
+function update_version_files() {
+	echo "${RELEASE_NAME}" > "${DUPLICATI_ROOT}/Duplicati/License/VersionTag.txt"
+	echo "${RELEASE_TYPE}" > "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateBuildChannel.txt"
+	UPDATE_MANIFEST_URLS="https://updates.duplicati.com/${RELEASE_TYPE}/latest.manifest;https://alt.updates.duplicati.com/${RELEASE_TYPE}/latest.manifest"
+	echo "${UPDATE_MANIFEST_URLS}" > "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateURL.txt"
+	cp "${DUPLICATI_ROOT}/Updates/release_key.txt"  "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateSignKey.txt"
+}
 
 function sign_binaries_with_authenticode  () {
 	if [ $SIGNED != true ]
@@ -66,7 +74,7 @@ function prepare_update_source_folder () {
 	cp -R "${DUPLICATI_ROOT}Duplicati/Server/webroot" "${UPDATE_SOURCE}"
 
 	# We copy some files for alphavss manually as they are not picked up by xbuild
-	mkdir "${UPDATE_SOURCE}/alphavss"
+	mkdir -p "${UPDATE_SOURCE}/alphavss"
 	for FN in "${DUPLICATI_ROOT}/Duplicati/Library/Snapshots/bin/Release/"AlphaVSS.*.dll; do
 		cp "${FN}" "${UPDATE_SOURCE}/alphavss/"
 	done
@@ -98,14 +106,8 @@ function prepare_update_source_folder () {
 
 parse_options "$@"
 travis_mark_begin "BUILDING ZIP"
-echo "+ updating versions in files" && update_version_files
-
-echo "+ copying binaries for packaging" && prepare_update_source_folder
-
-echo "+ signing binaries with authenticode" && sign_binaries_with_authenticode
-
-echo "+ generating package zipfile" && eval generate_package $IF_QUIET_SUPPRESS_OUTPUT
-
-echo
-echo "= Built succesfully package delivered in: ${UPDATE_TARGET}"
+update_version_files
+prepare_update_source_folder
+sign_binaries_with_authenticode
+eval generate_package $IF_QUIET_SUPPRESS_OUTPUT
 travis_mark_end "BUILDING ZIP"

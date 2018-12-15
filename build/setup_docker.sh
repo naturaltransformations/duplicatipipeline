@@ -1,9 +1,8 @@
 #!/bin/bash
-
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 . "${SCRIPT_DIR}/../shared.sh"
 
-function build_install () {
+function setup () {
     apt-get update && apt-get install -y git libgtk2.0-cil
     eval nuget restore Duplicati.sln $IF_QUIET_SUPPRESS_OUTPUT
 
@@ -13,7 +12,6 @@ function build_install () {
 }
 
 parse_options $@
-travis_mark_begin "PREPARING FOR BUILD"
-build_install
-travis_mark_end "PREPARING FOR BUILD"
-
+travis_mark_begin "SETUP DOCKER IMAGE"
+setup
+travis_mark_end "SETUP DOCKER IMAGE"

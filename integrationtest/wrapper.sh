@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 . "${SCRIPT_DIR}/../shared.sh"
 
@@ -16,33 +15,6 @@ function start_in_docker() {
     ./BuildTools/scripts/travis/integrationtest/test.sh"
 }
 
-BUILD=false
-
-while true ; do
-    case "$1" in
-	--rebuild)
-		BUILD=true
-		;;
-    --cache)
-        CACHE_DIR=$2
-        shift
-        ;;
-    --* | -* )
-        echo "unknown option $1, please use --help."
-        exit 1
-        ;;
-    * )
-        break
-        ;;
-    esac
-    shift
-done
+parse_options "$@"
 
 load_mono
-
-if $BUILD
-then
-    build_binaries
-fi
-
-start_in_docker

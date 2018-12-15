@@ -1,9 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 . "${SCRIPT_DIR}/shared.sh"
+set -o pipefail
 
-TRAVIS_BUILD_DIR="${SCRIPT_DIR}/../../"
-BUILD_CACHE="${TRAVIS_BUILD_DIR}/../.cache"
-${TRAVIS_BUILD_DIR}/BuildTools/PipeLine/build/wrapper.sh --repodir "${TRAVIS_BUILD_DIR}" --cache "$BUILD_CACHE" | ts
-${TRAVIS_BUILD_DIR}/BuildTools/PipeLine/unittest/wrapper.sh --categories BulkNormal --data data.zip --cache "$BUILD_CACHE" | ts
-${TRAVIS_BUILD_DIR}/BuildTools/PipeLine/package/wrapper.sh --cache "$BUILD_CACHE" | ts
+#${SCRIPT_DIR}/build/wrapper.sh | ts
+#${SCRIPT_DIR}/unittest/wrapper.sh --categories BulkNormal --data data.zip | ts
+#${SCRIPT_DIR}/create_zip/wrapper.sh | ts
+${SCRIPT_DIR}/create_installers/wrapper.sh --installers debian,fedora | ts

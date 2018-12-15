@@ -1,7 +1,6 @@
 #!/bin/bash
-
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/utils.sh"
+. "${SCRIPT_DIR}/../shared.sh"
 
 function build_file_signatures() {
 	if [ "z${GPGID}" != "z" ]; then
@@ -28,8 +27,6 @@ function sign_with_gpg () {
 		echo "https://pgp.mit.edu/pks/lookup?op=get&search=${GPGID}" >> "./tmp/${SIG_FOLDER}/sign-key.txt"
 	fi
 
-	rm -f "${UPDATE_TARGET}/${ZIP_FILE_WITH_SIGNATURES}"
-
 	zip -r9 "${ZIP_FILE_WITH_SIGNATURES}" "./tmp/${SIG_FOLDER}/"
 
 	rm -rf "./tmp"
@@ -37,10 +34,10 @@ function sign_with_gpg () {
 
 parse_options "$@"
 
-for installer_script in $(ls $SCRIPT_DIR/installers-*.sh); do
-	$installer_script
+for type in $(echo $INSTALLERS | sed "s/,/ /g"); do
+	echo $type
+	${SCRIPT_DIR}/installers-${type}.sh
 done
-
 
 if [ $SIGNED = true ]; then
 	GPG=/usr/local/bin/gpg2

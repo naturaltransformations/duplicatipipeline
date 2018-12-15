@@ -1,6 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/utils.sh"
+. "${SCRIPT_DIR}/../shared.sh"
 
 function build_installer () {
 	DEBNAME="duplicati_${RELEASE_VERSION}-1_all.deb"
