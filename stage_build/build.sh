@@ -1,7 +1,14 @@
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared.sh"
+. "${SCRIPT_DIR}/../shared/utils.sh"
 
 function build () {
+
+    eval nuget restore Duplicati.sln $IF_QUIET_SUPPRESS_OUTPUT
+
+    if [ ! -d "${DUPLICATI_ROOT}"/packages/SharpCompress.0.18.2 ]; then
+        ln -s "${DUPLICATI_ROOT}"/packages/sharpcompress.0.18.2 "${DUPLICATI_ROOT}"/packages/SharpCompress.0.18.2
+    fi
+
     # build version stamper
 	msbuild /property:Configuration=Release "${DUPLICATI_ROOT}/BuildTools/UpdateVersionStamp/UpdateVersionStamp.csproj"
 	mono "${DUPLICATI_ROOT}/BuildTools/UpdateVersionStamp/bin/Release/UpdateVersionStamp.exe" --version="${RELEASE_VERSION}"

@@ -161,7 +161,8 @@ function pull_mono_docker_image () {
 
 function run_with_docker () {
   docker run -e WORKING_DIR="$WORKING_DIR" -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "${WORKING_DIR}:/duplicati" --rm $DOCKER_IMAGE /bin/bash -c "cd /duplicati;$1"
+  -v "${WORKING_DIR}:/duplicati" --privileged --rm $DOCKER_IMAGE /bin/bash -c \
+  "/duplicati/BuildTools/PipeLine/shared/runner.sh $FORWARD_OPTS"
 }
 
 function parse_options () {
@@ -188,6 +189,16 @@ function parse_options () {
         RELEASE_TYPE="$2"
         shift
         ;;
+      --dockercommand)
+        DOCKER_COMMAND="$2"
+        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        shift
+        ;;
+      --dockerpackages)
+        DOCKER_PACKAGES="$2"
+        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        shift
+        ;;
       --dockerimage)
         DOCKER_IMAGE="$2"
         shift
@@ -201,8 +212,9 @@ function parse_options () {
         IF_QUIET_SUPPRESS_OUTPUT=" > /dev/null"
         FORWARD_OPTS="$FORWARD_OPTS --$1"
     		;;
-      --data)
+      --testdata)
         TEST_DATA=$2
+        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
         shift
         ;;
       --gittag)
@@ -210,8 +222,9 @@ function parse_options () {
         FORWARD_OPTS="$FORWARD_OPTS $1 $2"
         shift
         ;;
-      --categories)
+      --testcategories)
         TEST_CATEGORIES=$2
+        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
         shift
         ;;
       --* | -* )

@@ -1,6 +1,6 @@
-
+#!/bin/bash
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared.sh"
+. "${SCRIPT_DIR}/../shared/utils.sh"
 
 function update_version_files() {
 	echo "${RELEASE_NAME}" > "${DUPLICATI_ROOT}/Duplicati/License/VersionTag.txt"
