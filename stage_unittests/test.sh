@@ -23,7 +23,7 @@ function start_test () {
         export UNITTEST_BASEFOLDER=~/duplicati_testdata/"${CAT}"
         rm -rf ${UNITTEST_BASEFOLDER} && mkdir -p ${UNITTEST_BASEFOLDER}
 
-        if [[ $ZIPFILE != "" ]]; then
+        if [[ ${TEST_DATA} != "" ]]; then
             get_and_extract_test_zip
         fi
 
