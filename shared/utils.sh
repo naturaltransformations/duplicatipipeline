@@ -118,51 +118,24 @@ install_oem_files () {
     done
 }
 
-function sync_and_use_build_cache () {
-  sudo rsync -a --delete "$DUPLICATI_ROOT"/ "$BUILD_CACHE"
-  export WORKING_DIR=$(cd "$BUILD_CACHE";pwd -P)
-}
-
-function sync_and_use_test_cache () {
-  sudo rsync -a --delete "$BUILD_CACHE"/ "$TEST_CACHE"
-  export WORKING_DIR=$(cd "$TEST_CACHE";pwd -P)
-}
-
-function sync_and_use_zip_cache () {
-  sudo rsync -a --delete "$BUILD_CACHE"/ "$ZIP_CACHE"
-  export WORKING_DIR=$(cd "$ZIP_CACHE";pwd -P)
-}
-
-function sync_and_use_installer_cache () {
-  sudo rsync -a --delete "$ZIP_CACHE"/ "$INSTALLER_CACHE"
-  export WORKING_DIR=$(cd "$INSTALLER_CACHE";pwd -P)
-}
-
 function pull_docker_image () {
   travis_mark_begin "PULL MINIMAL DOCKER IMAGE"
   docker pull $DOCKER_IMAGE
   travis_mark_end "PULL MINIMAL DOCKER IMAGE"
 }
 
-function pull_mono_docker_image () {
-  travis_mark_begin "PULL MONO DOCKER IMAGE"
-  image="$CACHE_DIR/mono.tar"
-  if [[ -f "$image" ]] && $CACHE_MONO; then
-    echo "loading previously cached docker image"
-    docker load <  "$image"
-  else
-    docker pull mono
-    if $CACHE_MONO; then
-      docker save mono > "$CACHE_DIR"/mono.tar
-    fi
-  fi
-  travis_mark_end "PULL MONO DOCKER IMAGE"
-}
-
 function run_with_docker () {
-  docker run -e WORKING_DIR="$WORKING_DIR" -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "${WORKING_DIR}:/duplicati" --privileged --rm $DOCKER_IMAGE /bin/bash -c \
-  "/duplicati/BuildTools/PipeLine/shared/runner.sh $FORWARD_OPTS"
+  if [ -z ${TARGET_CACHE} ]; then
+    echo "no target cache specified"
+    exit 1
+  fi
+
+  docker run -e WORKING_DIR="$TARGET_CACHE" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "${TARGET_CACHE}:/duplicati" \
+  -v "${SOURCE_CACHE}:/.cache" \
+  --privileged --rm $DOCKER_IMAGE /bin/bash -c \
+  "/.cache/BuildTools/PipeLine/shared/runner.sh $FORWARD_OPTS"
 }
 
 function parse_options () {
@@ -215,6 +188,16 @@ function parse_options () {
       --testdata)
         TEST_DATA=$2
         FORWARD_OPTS="$FORWARD_OPTS $1 $2"
+        shift
+        ;;
+      --sourcecache)
+        SOURCE_CACHE="$2"
+        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        shift
+        ;;
+      --targetcache)
+        TARGET_CACHE="$2"
+        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
         shift
         ;;
       --gittag)
