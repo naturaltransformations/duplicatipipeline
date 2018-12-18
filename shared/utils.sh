@@ -4,6 +4,9 @@ BUILD_CACHE="${DUPLICATI_ROOT}/../.duplicati_build_cache"
 TEST_CACHE="${DUPLICATI_ROOT}/../.duplicati_test_cache"
 ZIP_CACHE="${DUPLICATI_ROOT}/../.duplicati_zip_cache"
 INSTALLER_CACHE="${DUPLICATI_ROOT}/../.duplicati_installer_cache"
+DEPLOY_CACHE="${DUPLICATI_ROOT}/../.duplicati_deploy_cache"
+
+declare -a FORWARD_OPTS
 
 function quit_on_error() {
   local parent_lineno="$1"
@@ -134,8 +137,7 @@ function run_with_docker () {
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "${TARGET_CACHE}:/duplicati" \
   -v "${SOURCE_CACHE}:/.cache" \
-  --privileged --rm $DOCKER_IMAGE /bin/bash -c \
-  "/.cache/BuildTools/PipeLine/shared/runner.sh $FORWARD_OPTS"
+  --privileged --rm $DOCKER_IMAGE "/.cache/BuildTools/PipeLine/shared/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
 function parse_options () {
@@ -164,12 +166,14 @@ function parse_options () {
         ;;
       --dockercommand)
         DOCKER_COMMAND="$2"
-        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --dockerpackages)
         DOCKER_PACKAGES="$2"
-        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --dockerimage)
@@ -178,38 +182,64 @@ function parse_options () {
         ;;
       --installers)
         INSTALLERS="$2"
-        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
     	--quiet)
         IF_QUIET_SUPPRESS_OUTPUT=" > /dev/null"
-        FORWARD_OPTS="$FORWARD_OPTS --$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
     		;;
       --testdata)
         TEST_DATA=$2
-        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --sourcecache)
         SOURCE_CACHE="$2"
-        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --targetcache)
         TARGET_CACHE="$2"
-        FORWARD_OPTS="$FORWARD_OPTS $1 \"$2\""
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --gittag)
         GIT_TAG=$2
-        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --testcategories)
         TEST_CATEGORIES=$2
-        FORWARD_OPTS="$FORWARD_OPTS $1 $2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
+      --awskeyid)
+        AWS_ACCESS_KEY_ID="$2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        ;;
+      --awssecret)
+        AWS_SECRET_ACCESS_KEY="$2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        ;;
+      --awsbucket)
+        AWS_BUCKET_URI="$2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        ;;
+      # TODO: need better forwarding logic
       --* | -* )
         echo "unknown option $1, please use --help."
         exit 1
@@ -239,4 +269,10 @@ function parse_options () {
   GPG=/usr/local/bin/gpg2
   # Newer GPG needs this to allow input from a non-terminal
   export GPG_TTY=$(tty)
+}
+
+function run () {
+  parse_options "$@"
+  pull_docker_image
+  run_with_docker
 }
