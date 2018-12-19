@@ -7,6 +7,4 @@ run "$@" \
 --dockerimage teracy/ubuntu:16.04-dind-latest \
 --gittag $(git rev-parse --short HEAD) \
 --dockerpackages "$PACKAGES" \
---sourcecache "$ZIP_CACHE" \
---targetcache "$INSTALLER_CACHE" \
 --dockercommand "./BuildTools/PipeLine/stage_createinstallers/create.sh"

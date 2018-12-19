@@ -5,6 +5,4 @@ SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 PACKAGES="libgtk2.0-cil rsync"
 run "$@" --dockerimage mono \
 --dockerpackages "$PACKAGES" \
---sourcecache "$DUPLICATI_ROOT" \
---targetcache "$BUILD_CACHE" \
 --dockercommand "./BuildTools/PipeLine/stage_build/build.sh"

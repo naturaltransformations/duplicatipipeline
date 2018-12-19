@@ -72,6 +72,19 @@ function upload_to_aws() {
     aws s3 cp "${UPDATE_TARGET}/" "${AWS_BUCKET_URI}/${RELEASE_TYPE}/" --recursive
 }
 
+function deploy_docker () {
+	ARCHITECTURES="amd64 arm32v7"
+	#echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+	docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
+
+	for arch in $ARCHITECTURES; do
+    	tags="linux-${arch}-${VERSION} linux-${arch}-${RELEASE_TYPE}"
+		for tag in $tags; do
+	        docker push ${REPOSITORY}:${tag}
+		done
+	done
+}
+
 parse_options "$@"
 travis_mark_begin "UPLOADING BINARIES"
 upload_to_aws

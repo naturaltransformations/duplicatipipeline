@@ -7,6 +7,4 @@ PACKAGES="wget unzip rsync"
 run "$@" \
 --dockerimage mono \
 --dockerpackages "$PACKAGES" \
---sourcecache "$BUILD_CACHE" \
---targetcache "$TEST_CACHE" \
 --dockercommand "./BuildTools/PipeLine/stage_unittests/test.sh"

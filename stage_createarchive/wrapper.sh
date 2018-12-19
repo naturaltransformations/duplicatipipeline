@@ -6,6 +6,4 @@ PACKAGES="rsync"
 run "$@" \
 --dockerimage mono \
 --dockerpackages "$PACKAGES" \
---sourcecache "$BUILD_CACHE" \
---targetcache "$ZIP_CACHE" \
 --dockercommand "./BuildTools/PipeLine/stage_createarchive/create.sh"

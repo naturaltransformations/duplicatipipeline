@@ -40,6 +40,7 @@ function build_installer () {
             --build-arg RELEASE_NAME_SIMPLE=${RELEASE_NAME_SIMPLE} \
             --file "${installer_dir}"/context/Dockerfile \
             ${installer_dir}
+        #docker save -o ${UPDATE_TARGET}/
     done
 }
 
