@@ -7,7 +7,7 @@ function build_installer () {
     ARCHITECTURES="amd64 arm32v7"
     DEFAULT_ARCHITECTURE=amd64
     DEFAULT_RELEASE_TYPE=beta
-    REPOSITORY=duplicati/duplicati
+    DOCKER_REPOSITORY=duplicatiautomated/duplicati
 
     unzip -qd "${installer_dir}/${RELEASE_NAME_SIMPLE}" "$ZIPFILE"
 
@@ -29,7 +29,7 @@ function build_installer () {
 
         args=""
         for tag in ${tags}; do
-            args="-t ${REPOSITORY}:${tag} ${args}"
+            args="-t ${DOCKER_REPOSITORY}:${tag} ${args}"
         done
 
         docker build \
@@ -40,7 +40,7 @@ function build_installer () {
             --build-arg RELEASE_NAME_SIMPLE=${RELEASE_NAME_SIMPLE} \
             --file "${installer_dir}"/context/Dockerfile \
             ${installer_dir}
-        #docker save -o ${UPDATE_TARGET}/
+        docker save -o ${UPDATE_TARGET}/docker.linux-${arch}-${RELEASE_TYPE}.tar duplicatiautomated/duplicati:linux-${arch}-${RELEASE_TYPE}
     done
 }
 

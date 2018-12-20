@@ -131,11 +131,15 @@ function run_with_docker () {
     exit 1
   fi
 
-  docker run -e WORKING_DIR="$TARGET_CACHE" \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "${TARGET_CACHE}:/duplicati" \
-  -v "${SOURCE_CACHE[0]}:/.cache" \
-  --privileged --rm $DOCKER_IMAGE "/.cache/BuildTools/PipeLine/shared/runner.sh" "${FORWARD_OPTS[@]}"
+  declare -a volume_args
+
+  volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock -v ${TARGET_CACHE}:/duplicati"
+  for (( i=1; i<${#SOURCE_CACHE[@]}+1; i++ )); do
+    volume_args[${#volume_args[@]}]="-v ${SOURCE_CACHE[$i-1]}:/source_$i"
+  done
+
+  docker run -e WORKING_DIR="$TARGET_CACHE" ${volume_args[@]} \
+  --privileged --rm $DOCKER_IMAGE "/source_1/BuildTools/PipeLine/shared/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
 function parse_options () {
@@ -198,6 +202,8 @@ function parse_options () {
         ;;
       --sourcecache)
         SOURCE_CACHE[${#SOURCE_CACHE[@]}]="$2"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         ;;
       --targetcache)
@@ -207,7 +213,7 @@ function parse_options () {
         shift
         ;;
       --gittag)
-        GIT_TAG=$2
+        GIT_TAG="$2"
         FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
         FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
@@ -269,6 +275,7 @@ function parse_options () {
 	UPDATE_SOURCE="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_source-${RELEASE_VERSION}"
   UPDATE_TARGET="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_target-${RELEASE_VERSION}"
   ZIPFILE="${UPDATE_TARGET}/${RELEASE_FILE_NAME}.zip"
+  DOCKER_REPOSITORY="duplicatiautomated/duplicati"
 #  BUILDTAG_RAW=$(echo "${RELEASE_FILE_NAME}" | cut -d "." -f 1-4 | cut -d "-" -f 2-4)
   BUILDTAG="${RELEASE_TYPE}_${RELEASE_TIMESTAMP}_${GIT_TAG}"
   BUILDTAG=${BUILDTAG//-}
@@ -280,20 +287,8 @@ function parse_options () {
   export GPG_TTY=$(tty)
 }
 
-function merge_source_caches () {
-  if (( ${#SOURCE_CACHE[@]} == 1 )); then
-    return
-  fi
-
-  for (( i=2; i<${#SOURCE_CACHE[@]}+1; i++ )); do
-    echo "merging ${SOURCE_CACHE[$i-1]} into ${SOURCE_CACHE[0]}"
-    rsync -a "${SOURCE_CACHE[$i-1]}/" "${SOURCE_CACHE[0]}/"
-  done
-}
-
 function run () {
   parse_options "$@"
   pull_docker_image
-  merge_source_caches
   run_with_docker
 }

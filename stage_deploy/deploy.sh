@@ -69,24 +69,27 @@ function upload_to_aws() {
 
 	export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 	export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-    aws s3 cp "${UPDATE_TARGET}/" "${AWS_BUCKET_URI}/${RELEASE_TYPE}/" --recursive
+    aws s3 cp "${UPDATE_TARGET}/" "${AWS_BUCKET_URI}/${RELEASE_TYPE}/" --recursive --exclude "docker.*"
 }
 
-function deploy_docker () {
+function push_docker () {
 	ARCHITECTURES="amd64 arm32v7"
 	#echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
-	docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
+	echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USER" --password-stdin
 
 	for arch in $ARCHITECTURES; do
-    	tags="linux-${arch}-${VERSION} linux-${arch}-${RELEASE_TYPE}"
+		docker load -i ${UPDATE_TARGET}/docker.linux-${arch}-${RELEASE_TYPE}.tar
+    	tags="linux-${arch}-${RELEASE_VERSION} linux-${arch}-${RELEASE_TYPE}"
 		for tag in $tags; do
-	        docker push ${REPOSITORY}:${tag}
+	        docker push ${DOCKER_REPOSITORY}:${tag}
 		done
 	done
+
 }
 
 parse_options "$@"
 travis_mark_begin "UPLOADING BINARIES"
+push_docker
 upload_to_aws
 travis_mark_end "UPLOADING BINARIES"
 
