@@ -17,4 +17,5 @@ parse_options "$@"
 
 /source_1/BuildTools/PipeLine/shared/setup_docker.sh --dockerpackages "$DOCKER_PACKAGES"
 sync_cache
-/duplicati/$DOCKER_COMMAND "$@"
+cd /duplicati
+$DOCKER_COMMAND "$@"
