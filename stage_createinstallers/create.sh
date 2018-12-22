@@ -1,6 +1,5 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function build_file_signatures() {
 	if [ "z${GPGID}" != "z" ]; then
@@ -32,13 +31,37 @@ function sign_with_gpg () {
 	rm -rf "./tmp"
 }
 
-parse_options "$@"
+function parse_module_options () {
+  while true ; do
+      case "$1" in
+      --installers)
+        INSTALLERS="$2"
+        ;;
+      --gittag)
+        GIT_TAG="$2"
+        ;;
+      "" )
+        break
+        ;;
+      esac
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+      shift
+      shift
+  done
+
+  export BUILDTAG="${RELEASE_TYPE}_${RELEASE_TIMESTAMP}_${GIT_TAG}"
+  export BUILDTAG=${BUILDTAG//-}
+}
+
+parse_duplicati_options "$@"
+parse_module_options "${FORWARD_OPTS[@]}"
 
 for type in $(echo $INSTALLERS | sed "s/,/ /g"); do
-	${SCRIPT_DIR}/installers-${type}.sh ${FORWARD_OPTS[@]}
+	"$( cd "$(dirname "$0")" ; pwd -P )"/installers-${type}.sh ${FORWARD_OPTS[@]}
 done
 
-if [ $SIGNED = true ]; then
+if [[ $SIGNED = true ]]; then
 	GPG=/usr/local/bin/gpg2
 	set_gpg_data
 

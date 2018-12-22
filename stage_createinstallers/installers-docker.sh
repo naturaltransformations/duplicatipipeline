@@ -1,6 +1,6 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function build_installer () {
     installer_dir="${DUPLICATI_ROOT}/BuildTools/Installer/Docker/"
@@ -43,8 +43,6 @@ function build_installer () {
         docker save -o ${UPDATE_TARGET}/docker.linux-${arch}-${RELEASE_TYPE}.tar duplicatiautomated/duplicati:linux-${arch}-${RELEASE_TYPE}
     done
 }
-
-parse_options "$@"
 
 travis_mark_begin "BUILDING DOCKER PACKAGE"
 build_installer

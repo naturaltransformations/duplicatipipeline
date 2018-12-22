@@ -1,6 +1,6 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function append_json_installers () {
 cat >> "${UPDATE_TARGET}/latest-installers.json" <<EOF
@@ -74,7 +74,6 @@ function upload_to_aws() {
 
 function push_docker () {
 	ARCHITECTURES="amd64 arm32v7"
-	#echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
 	echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USER" --password-stdin
 
 	for arch in $ARCHITECTURES; do
@@ -87,9 +86,39 @@ function push_docker () {
 
 }
 
-parse_options "$@"
+function parse_module_options () {
+  while true ; do
+      case "$1" in
+      --awskeyid)
+        AWS_ACCESS_KEY_ID="$2"
+        ;;
+      --awssecret)
+        AWS_SECRET_ACCESS_KEY="$2"
+        ;;
+      --awsbucket)
+        AWS_BUCKET_URI="$2"
+        ;;
+  	  --dockeruser)
+		DOCKER_USER="$2"
+		;;
+      --dockerpassword)
+        DOCKER_PASSWORD="$2"
+        ;;
+      "" )
+        break
+        ;;
+      esac
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+      shift
+      shift
+  done
+}
+
+parse_module_options "$@"
+parse_duplicati_options "${FORWARD_OPTS[@]}"
+
 travis_mark_begin "UPLOADING BINARIES"
 push_docker
 upload_to_aws
 travis_mark_end "UPLOADING BINARIES"
-

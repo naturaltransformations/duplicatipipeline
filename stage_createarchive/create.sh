@@ -1,6 +1,5 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
 
 function update_version_files() {
 	echo "${RELEASE_NAME}" > "${DUPLICATI_ROOT}/Duplicati/License/VersionTag.txt"
@@ -103,11 +102,9 @@ function prepare_update_source_folder () {
 	rm -rf "${UPDATE_SOURCE}/"*.mdb "${UPDATE_SOURCE}/"*.pdb "${UPDATE_SOURCE}/"*.xml
 }
 
-
-parse_options "$@"
 travis_mark_begin "BUILDING ZIP"
 update_version_files
 prepare_update_source_folder
 sign_binaries_with_authenticode
-eval generate_package $IF_QUIET_SUPPRESS_OUTPUT
+generate_package
 travis_mark_end "BUILDING ZIP"

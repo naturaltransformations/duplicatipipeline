@@ -1,21 +1,51 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/error_handling.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/markers.sh"
 
 function sync_cache () {
-  travis_mark_begin "SYNCING CACHE"
+  travis_mark_begin "SYNCING CACHES"
   rsync -a --delete "/source_1/" "/duplicati/"
-  for (( i=2; i<${#SOURCE_CACHE[@]}+1; i++ )); do
-    echo "syncing ${SOURCE_CACHE[$i-1]} to ${TARGET_CACHE}"
+  for (( i=2; i<$NUM_SOURCE_CACHES+1; i++ )); do
     rsync -a "/source_${i}/" "/duplicati/"
   done
-  travis_mark_end "SYNCING CACHE"
+  travis_mark_end "SYNCING CACHES"
 }
 
-shift
+function setup () {
+   if [ -f /sbin/apk ]; then
+      apk --update add $DOCKER_PACKAGES
+      return
+   fi
+
+   if [ -f /usr/bin/apt-get ]; then
+      apt-get update && apt-get install -y $DOCKER_PACKAGES
+      return
+   fi
+}
+
+function parse_options () {
+  while true ; do
+      case "$1" in
+      --dockercommand)
+          DOCKER_COMMAND="$2"
+          ;;
+      --dockerpackages)
+          DOCKER_PACKAGES="$2"
+          ;;
+      "" )
+        break
+        ;;
+      esac
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+      shift
+      shift
+  done
+}
+
 parse_options "$@"
 
-/source_1/BuildTools/PipeLine/shared/setup_docker.sh --dockerpackages "$DOCKER_PACKAGES"
+setup
 sync_cache
 cd /duplicati
-$DOCKER_COMMAND "$@"
+$DOCKER_COMMAND "${FORWARD_OPTS[@]}"

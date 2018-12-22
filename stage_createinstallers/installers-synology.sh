@@ -1,12 +1,11 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function build_installer () {
     installer_dir="${DUPLICATI_ROOT}/BuildTools/Installer/Synology"
     DATE_STAMP=$(LANG=C date -R)
     BASE_FILE_NAME="${RELEASE_FILE_NAME%.*}"
-    TMPRELEASE_NAME_SIMPLE="${installer_dir}/${BASE_FILE_NAME}-extract"
 
     TIMESERVER="http://timestamp.synology.com/timestamp.php"
 
@@ -53,10 +52,10 @@ function build_installer () {
     "${installer_dir}/"package.tgz "${installer_dir}/"scripts
     # TODO: These folders are not present in git: "${SCRIPT_DIR}/"conf "${SCRIPT_DIR}/"WIZARD_UIFILES . Remove?
 
-
     set_gpg_data
 
     if [ "z${GPGID}" != "z" ]; then
+        TMPRELEASE_NAME_SIMPLE="${installer_dir}/${BASE_FILE_NAME}-extract"
         # Now codesign the spk file
         mkdir "${TMPRELEASE_NAME_SIMPLE}"
         tar xf "${BASE_FILE_NAME}.spk" -C "${TMPRELEASE_NAME_SIMPLE}"
@@ -80,8 +79,6 @@ function build_installer () {
 
     mv "${installer_dir}/${BASE_FILE_NAME}.spk" "${UPDATE_TARGET}"
 }
-
-parse_options "$@"
 
 travis_mark_begin "BUILDING SYNOLOGY PACKAGE"
 build_installer

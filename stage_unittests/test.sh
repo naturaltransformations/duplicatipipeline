@@ -1,6 +1,6 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function get_and_extract_test_zip () {
     travis_mark_begin "DOWNLOADING TEST DATA $CAT"
@@ -34,7 +34,36 @@ function start_test () {
     done
 }
 
-parse_options "$@"
+function parse_module_options () {
+  while true ; do
+      case "$1" in
+      --testdata)
+        TEST_DATA=$2
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        ;;
+      --testcategories)
+        TEST_CATEGORIES=$2
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        ;;
+      --* )
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        ;;
+      * )
+        break
+        ;;
+      esac
+      shift
+  done
+}
+
+parse_duplicati_options "$@"
+parse_module_options "${FORWARD_OPTS[@]}"
 
 travis_mark_begin "UNIT TESTING"
 start_test

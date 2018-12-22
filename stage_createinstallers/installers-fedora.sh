@@ -1,6 +1,6 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function build_installer () {
     installer_dir="${DUPLICATI_ROOT}/BuildTools/Installer/fedora/"
@@ -42,8 +42,6 @@ function build_installer () {
 
     cp "${RPMBUILD}/RPMS/noarch/"*.rpm ${UPDATE_TARGET}/
 }
-
-parse_options "$@"
 
 travis_mark_begin "BUILDING FEDORA PACKAGE"
 build_installer

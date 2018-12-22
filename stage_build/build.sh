@@ -1,9 +1,9 @@
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/utils.sh"
+#!/bin/bash
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
 
 function build () {
-
-    eval nuget restore Duplicati.sln $IF_QUIET_SUPPRESS_OUTPUT
+    nuget restore Duplicati.sln
 
     if [ ! -d "${DUPLICATI_ROOT}"/packages/SharpCompress.0.18.2 ]; then
         ln -s "${DUPLICATI_ROOT}"/packages/sharpcompress.0.18.2 "${DUPLICATI_ROOT}"/packages/SharpCompress.0.18.2
@@ -24,8 +24,8 @@ function build () {
     cp -r "${DUPLICATI_ROOT}"/Duplicati/Server/webroot "${DUPLICATI_ROOT}"/Duplicati/GUI/Duplicati.GUI.TrayIcon/bin/Release/webroot
 }
 
-parse_options "$@"
+parse_duplicati_options "$@"
 
 travis_mark_begin "BUILDING BINARIES"
-eval build $IF_QUIET_SUPPRESS_OUTPUT
+build
 travis_mark_end "BUILDING BINARIES"
