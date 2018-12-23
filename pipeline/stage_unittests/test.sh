@@ -1,6 +1,6 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/markers.sh
+. /pipeline/shared/duplicati.sh
 
 function get_and_extract_test_zip () {
     travis_mark_begin "DOWNLOADING TEST DATA $CAT"
@@ -12,7 +12,6 @@ function get_and_extract_test_zip () {
 }
 
 function start_test () {
-    echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | tee -a /etc/ssl/certs/ca-
     nuget install NUnit.Runners -Version 3.5.0 -OutputDirectory testrunner
 
     for CAT in $(echo $TEST_CATEGORIES | sed "s/,/ /g")

@@ -1,7 +1,7 @@
 #!/bin/bash
 . "$( cd "$(dirname "$0")" ; pwd -P )/../shared/error_handling.sh"
 
-export DUPLICATI_ROOT="$( cd "$(dirname "$0")" ; pwd -P )/../../../"
+export DUPLICATI_ROOT="/application/"
 declare -a FORWARD_OPTS
 
 function get_keyfile_password () {

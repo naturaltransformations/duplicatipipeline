@@ -4,9 +4,9 @@
 
 function sync_cache () {
   travis_mark_begin "SYNCING CACHES"
-  rsync -a --delete "/source_1/" "/duplicati/"
+  rsync -a --delete "/source_1/" "/application/"
   for (( i=2; i<$NUM_SOURCE_CACHES+1; i++ )); do
-    rsync -a "/source_${i}/" "/duplicati/"
+    rsync -a "/source_${i}/" "/application/"
   done
   travis_mark_end "SYNCING CACHES"
 }
@@ -47,5 +47,5 @@ parse_options "$@"
 
 setup
 sync_cache
-cd /duplicati
+cd /application
 $DOCKER_COMMAND "${FORWARD_OPTS[@]}"

@@ -16,13 +16,16 @@ function run_with_docker () {
 
   declare -a volume_args
 
-  volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock -v ${TARGET_CACHE}:/duplicati"
+  volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock \
+  -v ${TARGET_CACHE}:/application \
+  -v $( cd "$(dirname "$0")" ; pwd -P )/../:/pipeline"
+
   for (( i=1; i<${#SOURCE_CACHE[@]}+1; i++ )); do
     volume_args[${#volume_args[@]}]="-v ${SOURCE_CACHE[$i-1]}:/source_$i"
   done
 
   docker run -e WORKING_DIR="$TARGET_CACHE" ${volume_args[@]} -e NUM_SOURCE_CACHES=${#SOURCE_CACHE[@]} \
-  --privileged --rm $DOCKER_IMAGE "/source_1/BuildTools/PipeLine/shared/runner.sh" "${FORWARD_OPTS[@]}"
+  --privileged --rm $DOCKER_IMAGE "/pipeline/shared/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
 function parse_options () {

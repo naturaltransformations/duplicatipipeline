@@ -20,14 +20,14 @@ env:
     - USAGEREPORTER_Duplicati_LEVEL=none
     - AUTOUPDATER_Duplicati_SKIP_UPDATE=1
     - TMPDIR=$HOME/tmp
-    - BUILD_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_build_cache
-    - TEST_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_test_cache
-    - ARCHIVE_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_zip_cache
-    - INSTALLER_DEBIAN_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_installer_debian_cache
-    - INSTALLER_FEDORA_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_installer_fedora_cache
-    - INSTALLER_SYNOLOGY_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_installer_synology_cache
-    - INSTALLER_DOCKER_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_installer_docker_cache
-    - UPLOAD_CACHE=${TRAVIS_BUILD_DIR}/../.duplicati_upload_cache
+    - BUILD_CACHE=${TRAVIS_BUILD_DIR}/.build_cache
+    - TEST_CACHE=${TRAVIS_BUILD_DIR}/.test_cache
+    - ARCHIVE_CACHE=${TRAVIS_BUILD_DIR}/.zip_cache
+    - INSTALLER_DEBIAN_CACHE=${TRAVIS_BUILD_DIR}/.installer_debian_cache
+    - INSTALLER_FEDORA_CACHE=${TRAVIS_BUILD_DIR}/.installer_fedora_cache
+    - INSTALLER_SYNOLOGY_CACHE=${TRAVIS_BUILD_DIR}/.installer_synology_cache
+    - INSTALLER_DOCKER_CACHE=${TRAVIS_BUILD_DIR}/.installer_docker_cache
+    - UPLOAD_CACHE=${TRAVIS_BUILD_DIR}/ .upload_cache
 # matrix expansion within jobs would be good:
 # https://github.com/travis-ci/travis-ci/issues/8295
 
@@ -38,7 +38,7 @@ jobs:
   include:
     - stage: build
       script:
-          - ./BuildTools/PipeLine/stage_build/wrapper.sh --sourcecache "${TRAVIS_BUILD_DIR}/" --targetcache "${BUILD_CACHE}" | ts
+          - ./pipeline/stage_build/wrapper.sh --sourcecache "${TRAVIS_BUILD_DIR}/duplicati" --targetcache "${BUILD_CACHE}" | ts
       cache:
         directories:
           - $BUILD_CACHE
@@ -49,35 +49,35 @@ jobs:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./BuildTools/PipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNormal --testdata data.zip | ts
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNormal --testdata data.zip | ts
     - stage: unit tests
       cache:
         directories:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./BuildTools/PipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNoSize --testdata data.zip | ts
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNoSize --testdata data.zip | ts
     - stage: unit tests
       cache:
         directories:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./BuildTools/PipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
     - stage: unit tests
       cache:
         directories:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./BuildTools/PipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
+        - ./pipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
     - stage: unit tests
       cache:
         directories:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./BuildTools/PipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
 
 
 
@@ -87,7 +87,7 @@ jobs:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./BuildTools/PipeLine/integrationtest/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
+        - ./pipeline/integrationtest/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
       addons:
         sauce_connect:
           username: $SAUCE_USERNAME
@@ -101,34 +101,34 @@ jobs:
           - $BUILD_CACHE
           - $ARCHIVE_CACHE
       script:
-        - ./BuildTools/PipeLine/stage_createarchive/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $ARCHIVE_CACHE | ts
+        - ./pipeline/stage_createarchive/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $ARCHIVE_CACHE | ts
 
 
 
     - stage: create installers
       script:
-        - ./BuildTools/PipeLine/stage_createinstallers/wrapper.sh --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_DEBIAN_CACHE --installers debian | ts
+        - ./pipeline/stage_createinstallers/wrapper.sh --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_DEBIAN_CACHE --installers debian | ts
       cache:
         directories:
           - $ARCHIVE_CACHE
           - $INSTALLER_DEBIAN_CACHE
     - stage: create installers
       script:
-        - ./BuildTools/PipeLine/stage_createinstallers/wrapper.sh  --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_FEDORA_CACHE --installers fedora | ts
+        - ./pipeline/stage_createinstallers/wrapper.sh  --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_FEDORA_CACHE --installers fedora | ts
       cache:
         directories:
           - $ARCHIVE_CACHE
           - $INSTALLER_FEDORA_CACHE
     - stage: create installers
       script:
-        - ./BuildTools/PipeLine/stage_createinstallers/wrapper.sh  --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_SYNOLOGY_CACHE --installers synology | ts
+        - ./pipeline/stage_createinstallers/wrapper.sh  --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_SYNOLOGY_CACHE --installers synology | ts
       cache:
         directories:
           - $ARCHIVE_CACHE
           - $INSTALLER_SYNOLOGY_CACHE
     - stage: create installers
       script:
-        - ./BuildTools/PipeLine/stage_createinstallers/wrapper.sh  --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_DOCKER_CACHE --installers docker | ts
+        - ./pipeline/stage_createinstallers/wrapper.sh  --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_DOCKER_CACHE --installers docker | ts
       cache:
         directories:
           - $ARCHIVE_CACHE
@@ -144,4 +144,4 @@ jobs:
           - $INSTALLER_SYNOLOGY_CACHE
           - $INSTALLER_DOCKER_CACHE
       script:
-        - ./BuildTools/PipeLine/stage_deploy/wrapper.sh --sourcecache $INSTALLER_DEBIAN_CACHE --sourcecache $INSTALLER_FEDORA_CACHE --sourcecache $INSTALLER_SYNOLOGY_CACHE --targetcache $UPLOAD_CACHE --dockeruser $DOCKER_USER --dockerpassword "$DOCKER_PASSWORD" --awskeyid $AWS_ACCESS_KEY_ID --awssecret $AWS_SECRET_ACCESS_KEY --awsbucket $AWS_BUCKET_URI | ts
+        - ./pipeline/stage_deploy/wrapper.sh --sourcecache $INSTALLER_DEBIAN_CACHE --sourcecache $INSTALLER_FEDORA_CACHE --sourcecache $INSTALLER_SYNOLOGY_CACHE --targetcache $UPLOAD_CACHE --dockeruser $DOCKER_USER --dockerpassword "$DOCKER_PASSWORD" --awskeyid $AWS_ACCESS_KEY_ID --awssecret $AWS_SECRET_ACCESS_KEY --awsbucket $AWS_BUCKET_URI | ts

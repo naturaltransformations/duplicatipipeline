@@ -6,4 +6,4 @@ PACKAGES="wget unzip rsync"
 "${SCRIPT_DIR}/../shared/utils.sh" "$@" \
 --dockerimage mono \
 --dockerpackages "$PACKAGES" \
---dockercommand "./BuildTools/PipeLine/stage_unittests/test.sh"
+--dockercommand "/pipeline/stage_unittests/test.sh"
