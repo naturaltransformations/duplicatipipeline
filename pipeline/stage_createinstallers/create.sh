@@ -1,5 +1,5 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/duplicati.sh
 
 function build_file_signatures() {
 	if [ "z${GPGID}" != "z" ]; then

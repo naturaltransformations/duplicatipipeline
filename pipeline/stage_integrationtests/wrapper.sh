@@ -6,4 +6,4 @@ PACKAGES="python-pip rsync"
 "${SCRIPT_DIR}/../shared/utils.sh" "$@" \
 --dockerimage mono \
 --dockerpackages "$PACKAGES" \
---dockercommand "./BuildTools/PipeLine/stage_integrationtests/test.sh"
+--dockercommand "/pipeline/stage_integrationtests/test.sh"

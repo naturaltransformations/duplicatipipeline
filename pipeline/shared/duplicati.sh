@@ -20,7 +20,7 @@ function get_keyfile_password () {
 }
 
 function set_gpg_data () {
-	if [ $SIGNED != true ]; then
+	if [[ $SIGNED != true ]]; then
 		return
 	fi
 

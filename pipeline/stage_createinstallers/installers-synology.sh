@@ -1,9 +1,9 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/duplicati.sh
+. /pipeline/shared/markers.sh
 
 function build_installer () {
-    installer_dir="${DUPLICATI_ROOT}/BuildTools/Installer/Synology"
+    installer_dir="${DUPLICATI_ROOT}/Installer/Synology"
     DATE_STAMP=$(LANG=C date -R)
     BASE_FILE_NAME="${RELEASE_FILE_NAME%.*}"
 

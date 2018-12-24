@@ -1,9 +1,9 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/duplicati.sh
+. /pipeline/shared/markers.sh
 
 function build_installer () {
-    installer_dir="${DUPLICATI_ROOT}/BuildTools/Installer/fedora/"
+    installer_dir="${DUPLICATI_ROOT}/Installer/fedora/"
     RPMBUILD="${installer_dir}/${RELEASE_NAME_SIMPLE}-rpmbuild"
     BUILDDATE=$(date +%Y%m%d)
 
@@ -33,10 +33,10 @@ function build_installer () {
 
     # Weirdness with time not being synced in Docker instance
     sleep 5
-    docker run  --rm \
+    docker run --rm \
         --workdir "/buildroot" \
-        --volume "${WORKING_DIR}/BuildTools/Installer/fedora":"/buildroot":"rw" \
-        --volume "${WORKING_DIR}/BuildTools/Installer/fedora/${RELEASE_NAME_SIMPLE}-rpmbuild":"/root/rpmbuild":"rw" \
+        --volume "${WORKING_DIR}/Installer/fedora":"/buildroot":"rw" \
+        --volume "${WORKING_DIR}/Installer/fedora/${RELEASE_NAME_SIMPLE}-rpmbuild":"/root/rpmbuild":"rw" \
         "duplicati/fedora-build:latest" \
         rpmbuild -bb duplicati-binary.spec
 

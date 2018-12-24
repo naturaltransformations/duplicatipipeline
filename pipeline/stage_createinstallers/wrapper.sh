@@ -7,4 +7,4 @@ PACKAGES="qemu-user qemu-user-static unzip rsync bzip2"
 --dockerimage teracy/ubuntu:16.04-dind-latest \
 --gittag $(git rev-parse --short HEAD) \
 --dockerpackages "$PACKAGES" \
---dockercommand "./BuildTools/PipeLine/stage_createinstallers/create.sh"
+--dockercommand "/pipeline/stage_createinstallers/create.sh"

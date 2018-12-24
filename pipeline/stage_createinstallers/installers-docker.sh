@@ -1,9 +1,9 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/duplicati.sh
+. /pipeline/shared/markers.sh
 
 function build_installer () {
-    installer_dir="${DUPLICATI_ROOT}/BuildTools/Installer/Docker/"
+    installer_dir="${DUPLICATI_ROOT}/Installer/Docker/"
     ARCHITECTURES="amd64 arm32v7"
     DEFAULT_ARCHITECTURE=amd64
     DEFAULT_RELEASE_TYPE=beta
