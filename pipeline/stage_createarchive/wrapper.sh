@@ -6,4 +6,4 @@ PACKAGES="rsync"
 "${SCRIPT_DIR}/../shared/utils.sh" "$@" \
 --dockerimage mono \
 --dockerpackages "$PACKAGES" \
---dockercommand "./BuildTools/PipeLine/stage_createarchive/create.sh"
+--dockercommand "/pipeline/stage_createarchive/create.sh"

@@ -18,6 +18,7 @@ function run_with_docker () {
 
   volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock \
   -v ${TARGET_CACHE}:/application \
+  -v $( cd "$(dirname "$0")" ; pwd -P )/../../keys:/keys \
   -v $( cd "$(dirname "$0")" ; pwd -P )/../:/pipeline"
 
   for (( i=1; i<${#SOURCE_CACHE[@]}+1; i++ )); do

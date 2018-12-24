@@ -1,5 +1,6 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
+. /pipeline/shared/markers.sh
+. /pipeline/shared/duplicati.sh
 
 function update_version_files() {
 	echo "${RELEASE_NAME}" > "${DUPLICATI_ROOT}/Duplicati/License/VersionTag.txt"
@@ -12,7 +13,6 @@ function update_version_files() {
 function sign_binaries_with_authenticode  () {
 	if [ $SIGNED != true ]
 	then
-		echo "  signing disabled, skipping"
 		return
 	fi
 
@@ -33,7 +33,7 @@ function set_gpg_autoupdate_options () {
 	fi
 
 	get_keyfile_password
-	UPDATER_KEYFILE="${HOME}/.config/signkeys/Duplicati/updater-release.key"
+	UPDATER_KEYFILE="/keys/updater-release.key"
 	auto_update_options="$auto_update_options --gpgkeyfile=\"${GPG_KEYFILE}\" --gpgpath=\"${GPG}\" \
 	--keyfile-password=\"${KEYFILE_PASSWORD}\" --keyfile=\"${UPDATER_KEYFILE}\""
 }
@@ -45,7 +45,7 @@ function generate_package () {
 
 	auto_update_options="--input=\"${UPDATE_SOURCE}\" --output=\"${UPDATE_TARGET}\"  \
 	 --manifest=${DUPLICATI_ROOT}/Updates/${RELEASE_TYPE}.manifest --changeinfo=\"${RELEASE_CHANGEINFO}\" --displayname=\"${RELEASE_NAME}\" \
-	 --remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${RELEASE_VERSION}\""
+	 --remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${RELEASE_VERSION}\" --allow-new-key=true --keyfile-password=\"TEST\" --keyfile=\"/keys/updater-release.key\""
 
 	set_gpg_autoupdate_options
 
@@ -86,7 +86,7 @@ function prepare_update_source_folder () {
 	done
 
 	# Install the assembly redirects for all Duplicati .exe files
-	find "${UPDATE_SOURCE}" -maxdepth 1 -type f -name Duplicati.*.exe -exec cp ${DUPLICATI_ROOT}/BuildTools/Installer/AssemblyRedirects.xml {}.config \;
+	find "${UPDATE_SOURCE}" -maxdepth 1 -type f -name Duplicati.*.exe -exec cp ${DUPLICATI_ROOT}/Installer/AssemblyRedirects.xml {}.config \;
 
 	# Clean some unwanted build files
 	for FILE in "control_dir" "Duplicati-server.sqlite" "Duplicati.debug.log" "updates"; do
@@ -101,6 +101,30 @@ function prepare_update_source_folder () {
 	# Clean debug files, if any
 	rm -rf "${UPDATE_SOURCE}/"*.mdb "${UPDATE_SOURCE}/"*.pdb "${UPDATE_SOURCE}/"*.xml
 }
+
+function parse_module_options () {
+  while true ; do
+      case "$1" in
+      --keyfile)
+        UPDATER_KEYFILE="$2"
+        ;;
+      --keyfilepassword)
+        KEYFILE_PASSWORD="$2"
+        ;;
+      "" )
+        break
+        ;;
+      esac
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+      shift
+      shift
+  done
+}
+
+parse_module_options "$@"
+parse_duplicati_options "${FORWARD_OPTS[@]}"
+
 
 travis_mark_begin "BUILDING ZIP"
 update_version_files
