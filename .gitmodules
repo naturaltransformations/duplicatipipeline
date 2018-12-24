@@ -1,4 +1,4 @@
 [submodule "duplicati"]
     path = duplicati
     url = https://github.com/verhoek/duplicati.git
-    branch=auto_updater/allow_for_new_key
+    branch=nightly_builds
