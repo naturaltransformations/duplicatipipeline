@@ -3,6 +3,9 @@ services: docker
 before_install:
   - sudo apt-get install moreutils
   - set -o pipefail
+before_script:
+  - git submodule update --remote
+  - git submodule sync
 addons:
   coverity_scan:
     project:
@@ -101,7 +104,7 @@ jobs:
           - $BUILD_CACHE
           - $ARCHIVE_CACHE
       script:
-        - ./pipeline/stage_createarchive/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $ARCHIVE_CACHE | ts
+        - ./pipeline/stage_createarchive/wrapper.sh --signingkeyfilepassword "sdfsdgsagfwefefqfq" --signingkeyfile "/keys/bla.key" --sourcecache $BUILD_CACHE --targetcache $ARCHIVE_CACHE | ts
 
 
 

@@ -27,15 +27,14 @@ function sign_binaries_with_authenticode  () {
 }
 
 function set_gpg_autoupdate_options () {
-	if [ $SIGNED != true ]
+	if [[ $SIGNED != true ]]
 	then
 		return
 	fi
 
 	get_keyfile_password
 	UPDATER_KEYFILE="/keys/updater-release.key"
-	auto_update_options="$auto_update_options --gpgkeyfile=\"${GPG_KEYFILE}\" --gpgpath=\"${GPG}\" \
-	--keyfile-password=\"${KEYFILE_PASSWORD}\" --keyfile=\"${UPDATER_KEYFILE}\""
+	auto_update_options="$auto_update_options --gpgkeyfile=\"${GPG_KEYFILE}\" --gpgpath=\"${GPG}\""
 }
 
 function generate_package () {
@@ -44,8 +43,11 @@ function generate_package () {
 	mkdir -p "${UPDATE_TARGET}"
 
 	auto_update_options="--input=\"${UPDATE_SOURCE}\" --output=\"${UPDATE_TARGET}\"  \
-	 --manifest=${DUPLICATI_ROOT}/Updates/${RELEASE_TYPE}.manifest --changeinfo=\"${RELEASE_CHANGEINFO}\" --displayname=\"${RELEASE_NAME}\" \
-	 --remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${RELEASE_VERSION}\" --allow-new-key=true --keyfile-password=\"TEST\" --keyfile=\"/keys/updater-release.key\""
+	 --manifest=${DUPLICATI_ROOT}/Updates/${RELEASE_TYPE}.manifest --changeinfo=\"${RELEASE_CHANGEINFO}\" \
+	 --displayname=\"${RELEASE_NAME}\" \
+	 --remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${RELEASE_VERSION}\" --allow-new-key=true \
+	 --keyfile-password=\"${SIGNING_KEYFILE_PASSWORD}\" \
+	 --keyfile=\"${SIGNING_KEYFILE}\""
 
 	set_gpg_autoupdate_options
 
@@ -105,11 +107,11 @@ function prepare_update_source_folder () {
 function parse_module_options () {
   while true ; do
       case "$1" in
-      --keyfile)
-        UPDATER_KEYFILE="$2"
+      --signingkeyfile)
+        SIGNING_KEYFILE="$2"
         ;;
-      --keyfilepassword)
-        KEYFILE_PASSWORD="$2"
+      --signingkeyfilepassword)
+        SIGNING_KEYFILE_PASSWORD="$2"
         ;;
       "" )
         break

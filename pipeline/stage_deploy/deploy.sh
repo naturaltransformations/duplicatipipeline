@@ -1,6 +1,6 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/duplicati.sh
+. /pipeline/shared/markers.sh
 
 function append_json_installers () {
 cat >> "${UPDATE_TARGET}/latest-installers.json" <<EOF
