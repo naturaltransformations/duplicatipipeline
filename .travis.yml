@@ -30,7 +30,7 @@ env:
     - INSTALLER_FEDORA_CACHE=${TRAVIS_BUILD_DIR}/.installer_fedora_cache
     - INSTALLER_SYNOLOGY_CACHE=${TRAVIS_BUILD_DIR}/.installer_synology_cache
     - INSTALLER_DOCKER_CACHE=${TRAVIS_BUILD_DIR}/.installer_docker_cache
-    - UPLOAD_CACHE=${TRAVIS_BUILD_DIR}/ .upload_cache
+    - UPLOAD_CACHE=${TRAVIS_BUILD_DIR}/.upload_cache
 # matrix expansion within jobs would be good:
 # https://github.com/travis-ci/travis-ci/issues/8295
 
@@ -46,41 +46,41 @@ jobs:
         directories:
           - $BUILD_CACHE
 
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNormal --testdata data.zip | ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNoSize --testdata data.zip | ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNormal --testdata data.zip | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNoSize --testdata data.zip | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
 
 
 
@@ -147,4 +147,4 @@ jobs:
           - $INSTALLER_SYNOLOGY_CACHE
           - $INSTALLER_DOCKER_CACHE
       script:
-        - ./pipeline/stage_deploy/wrapper.sh --sourcecache $INSTALLER_DEBIAN_CACHE --sourcecache $INSTALLER_FEDORA_CACHE --sourcecache $INSTALLER_SYNOLOGY_CACHE --targetcache $UPLOAD_CACHE --dockeruser $DOCKER_USER --dockerpassword "$DOCKER_PASSWORD" --awskeyid $AWS_ACCESS_KEY_ID --awssecret $AWS_SECRET_ACCESS_KEY --awsbucket $AWS_BUCKET_URI | ts
+        - ./pipeline/stage_deploy/wrapper.sh --sourcecache $INSTALLER_DEBIAN_CACHE --sourcecache $INSTALLER_FEDORA_CACHE --sourcecache $INSTALLER_SYNOLOGY_CACHE --sourcecache $INSTALLER_DOCKER_CACHE  --targetcache $UPLOAD_CACHE --dockeruser $DOCKER_USER --dockerpassword "$DOCKER_PASSWORD" --awskeyid $AWS_ACCESS_KEY_ID --awssecret $AWS_SECRET_ACCESS_KEY --awsbucket $AWS_BUCKET_URI | ts
