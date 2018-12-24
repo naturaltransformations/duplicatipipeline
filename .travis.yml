@@ -70,7 +70,7 @@ jobs:
           - $BUILD_CACHE
           - $HOME/download/
       script:
-        - ./pipeLine/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
+        - ./pipeline/stage_unittests/wrapper.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
     - stage: unit tests
       cache:
         directories:
