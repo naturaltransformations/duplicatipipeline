@@ -3,12 +3,14 @@
 . "$( cd "$(dirname "$0")" ; pwd -P )/markers.sh"
 
 function sync_cache () {
-  travis_mark_begin "SYNCING CACHES"
-  rsync -a --delete "/source_1/" "/application/"
-  for (( i=2; i<$NUM_SOURCE_CACHES+1; i++ )); do
-    rsync -a "/source_${i}/" "/application/"
+  rsync_delete_option="--delete"
+  for (( i=1; i<$NUM_SOURCE_CACHES+1; i++ )); do
+    travis_mark_begin "SYNCING CACHE source_${i}"
+    rsync -a $rsync_delete_option "/source_${i}/" "/application/"
+    unset rsync_delete_option
+    travis_mark_end "SYNCING CACHE source_${i}"
   done
-  travis_mark_end "SYNCING CACHES"
+
 }
 
 function setup () {
@@ -47,5 +49,6 @@ parse_options "$@"
 
 setup
 sync_cache
+ls -alR /application/Updates/
 cd /application
 $DOCKER_COMMAND "${FORWARD_OPTS[@]}"
