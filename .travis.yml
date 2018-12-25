@@ -147,4 +147,4 @@ jobs:
           - $INSTALLER_SYNOLOGY_CACHE
           - $INSTALLER_DOCKER_CACHE
       script:
-        - ./pipeline/stage_deploy/wrapper.sh --sourcecache $INSTALLER_DEBIAN_CACHE --sourcecache $INSTALLER_FEDORA_CACHE --sourcecache $INSTALLER_SYNOLOGY_CACHE --sourcecache $INSTALLER_DOCKER_CACHE  --targetcache $UPLOAD_CACHE --dockeruser $DOCKER_USER --dockerpassword "$DOCKER_PASSWORD" --awskeyid $AWS_ACCESS_KEY_ID --awssecret $AWS_SECRET_ACCESS_KEY --awsbucket $AWS_BUCKET_URI | ts
+        - ./pipeline/stage_deploy/wrapper.sh --sourcecache "$INSTALLER_DEBIAN_CACHE" --sourcecache "$INSTALLER_FEDORA_CACHE" --sourcecache "$INSTALLER_SYNOLOGY_CACHE" --sourcecache "$INSTALLER_DOCKER_CACHE"  --targetcache "$UPLOAD_CACHE" --dockeruser "$DOCKER_USER" --dockerpassword "$DOCKER_PASSWORD" --awskeyid "$AWS_ACCESS_KEY_ID" --awssecret "$AWS_SECRET_ACCESS_KEY" --awsbucket "$AWS_BUCKET_URI" | ts

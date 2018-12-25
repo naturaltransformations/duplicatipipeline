@@ -40,7 +40,7 @@ function build_installer () {
             --build-arg RELEASE_NAME_SIMPLE=${RELEASE_NAME_SIMPLE} \
             --file "${installer_dir}"/context/Dockerfile \
             ${installer_dir}
-        docker save -o ${UPDATE_TARGET}/docker.linux-${arch}-${RELEASE_TYPE}.tar duplicatiautomated/duplicati:linux-${arch}-${RELEASE_TYPE}
+        docker save duplicatiautomated/duplicati:linux-${arch}-${RELEASE_TYPE} > ${UPDATE_TARGET}/docker.linux-${arch}-${RELEASE_TYPE}.tar
     done
 }
 
