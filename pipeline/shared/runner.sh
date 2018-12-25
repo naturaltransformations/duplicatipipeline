@@ -49,6 +49,5 @@ parse_options "$@"
 
 setup
 sync_cache
-ls -alR /application/Updates/
 cd /application
 $DOCKER_COMMAND "${FORWARD_OPTS[@]}"
