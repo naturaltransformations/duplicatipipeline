@@ -99,9 +99,6 @@ function parse_duplicati_options () {
 
   while true ; do
       case "$1" in
-      --unsigned)
-        SIGNED=false
-        ;;
       --version)
         RELEASE_VERSION="$2"
         ;;

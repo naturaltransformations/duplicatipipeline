@@ -77,9 +77,11 @@ function push_docker () {
 	echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USER" --password-stdin
 
 	for arch in $ARCHITECTURES; do
-		docker load -i ${UPDATE_TARGET}/docker.linux-${arch}-${RELEASE_TYPE}.tar
+		docker load -i ${UPDATE_TARGET}/docker.linux-${arch}.tar
+		loaded_tag=linux-${arch}-${RELEASE_TYPE}
     	tags="linux-${arch}-${RELEASE_VERSION} linux-${arch}-${RELEASE_TYPE}"
 		for tag in $tags; do
+			docker tag ${DOCKER_REPOSITORY}:${loaded_tag} ${DOCKER_REPOSITORY}:${tag}
 	        docker push ${DOCKER_REPOSITORY}:${tag}
 		done
 	done
