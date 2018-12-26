@@ -1,6 +1,6 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/markers.sh"
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/duplicati.sh"
+. /pipeline/shared/duplicati.sh
+. /pipeline/shared/markers.sh
 
 function start_test () {
     pip install selenium
@@ -11,9 +11,10 @@ function start_test () {
     # chmod +x geckodriver
     # export PATH=$PATH:/duplicati/
 
-    echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | tee -a /etc/ssl/certs/ca-
+    #echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | tee -a /etc/ssl/certs/ca-
     mono "${DUPLICATI_ROOT}/Duplicati/GUI/Duplicati.GUI.TrayIcon/bin/Release/Duplicati.Server.exe" &
-    python guiTests/guiTest.py
+    cd
+    python /application/guiTests/guiTest.py
 }
 
 parse_duplicati_options "$@"

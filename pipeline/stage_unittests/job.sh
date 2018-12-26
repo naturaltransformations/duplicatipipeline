@@ -38,26 +38,23 @@ function parse_module_options () {
       case "$1" in
       --testdata)
         TEST_DATA=$2
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
-        shift
         ;;
       --testcategories)
         TEST_CATEGORIES=$2
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
-        shift
-        ;;
-      --* )
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
-        shift
-        ;;
-      * )
-        break
         ;;
       esac
-      shift
+      if [[ $2 =~ ^--.* || -z $2 ]]; then
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        shift
+      else
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        shift
+      fi
+      if [[ -z $1 ]]; then
+        break
+      fi
   done
 }
 

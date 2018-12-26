@@ -18,43 +18,55 @@ function run_with_docker () {
 
   volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock \
   -v ${TARGET_CACHE}:/application \
-  -v $( cd "$(dirname "$0")" ; pwd -P )/../../keys:/keys \
-  -v $( cd "$(dirname "$0")" ; pwd -P )/../:/pipeline"
+  ${DOCKER_MOUNT_KEYS} \
+  -v $( cd "$(dirname "$0")" ; pwd -P )/../:/pipeline ${DOCKER_SHARED_MEM}"
 
   for (( i=1; i<${#SOURCE_CACHE[@]}+1; i++ )); do
     volume_args[${#volume_args[@]}]="-v ${SOURCE_CACHE[$i-1]}:/source_$i"
   done
 
   docker run -e WORKING_DIR="$TARGET_CACHE" ${volume_args[@]} -e NUM_SOURCE_CACHES=${#SOURCE_CACHE[@]} \
-  --privileged --rm $DOCKER_IMAGE "/pipeline/shared/runner.sh" "${FORWARD_OPTS[@]}"
+  --privileged $DOCKER_AS_ROOT --rm $DOCKER_IMAGE "/pipeline/shared/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
 function parse_options () {
   FORWARD_OPTS=()
   SOURCE_CACHE=()
 
+
   while true ; do
       case "$1" in
       --dockerimage)
-          DOCKER_IMAGE="$2"
-          ;;
-      --installers)
-          INSTALLERS="$2"
-          ;;
+        DOCKER_IMAGE="$2"
+        ;;
       --sourcecache)
-          SOURCE_CACHE[${#SOURCE_CACHE[@]}]="$2"
-          ;;
+        SOURCE_CACHE[${#SOURCE_CACHE[@]}]="$2"
+        ;;
       --targetcache)
-          TARGET_CACHE="$2"
-          ;;
-      "" )
-          break
-          ;;
+        TARGET_CACHE="$2"
+        ;;
+      --dockerasroot)
+        DOCKER_AS_ROOT="-u 0"
+        ;;
+      --dockermountkeys)
+        DOCKER_MOUNT_KEYS="-v $( cd "$(dirname "$0")" ; pwd -P )/../../keys:/keys"
+        ;;
+      --dockersharedmem)
+        DOCKER_SHARED_MEM="-v /dev/shm:/dev/shm"
+        ;;
       esac
-      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
-      shift
-      shift
+      if [[ $2 =~ ^--.* || -z $2 ]]; then
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        shift
+      else
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        shift
+      fi
+      if [[ -z $1 ]]; then
+        break
+      fi
   done
 }
 

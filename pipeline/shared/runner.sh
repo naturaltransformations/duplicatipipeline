@@ -34,14 +34,19 @@ function parse_options () {
       --dockerpackages)
           DOCKER_PACKAGES="$2"
           ;;
-      "" )
-        break
-        ;;
       esac
-      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-      FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
-      shift
-      shift
+      if [[ $2 =~ ^--.* || -z $2 ]]; then
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        shift
+      else
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        shift
+        shift
+      fi
+      if [[ -z $1 ]]; then
+        break
+      fi
   done
 }
 

@@ -6,4 +6,5 @@ PACKAGES="rsync"
 "${SCRIPT_DIR}/../shared/start_docker.sh" "$@" \
 --dockerimage mono \
 --dockerpackages "$PACKAGES" \
+--dockermountkeys \
 --dockercommand "/pipeline/stage_createarchive/job.sh"
