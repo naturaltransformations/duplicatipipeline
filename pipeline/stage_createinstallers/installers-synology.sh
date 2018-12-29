@@ -52,8 +52,6 @@ function build_installer () {
     "${installer_dir}/"package.tgz "${installer_dir}/"scripts
     # TODO: These folders are not present in git: "${SCRIPT_DIR}/"conf "${SCRIPT_DIR}/"WIZARD_UIFILES . Remove?
 
-    set_gpg_data
-
     if [ "z${GPGID}" != "z" ]; then
         TMPRELEASE_NAME_SIMPLE="${installer_dir}/${BASE_FILE_NAME}-extract"
         # Now codesign the spk file

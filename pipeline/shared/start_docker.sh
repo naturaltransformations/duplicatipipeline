@@ -8,13 +8,18 @@ function pull_docker_image () {
   travis_mark_end "PULL MINIMAL DOCKER IMAGE"
 }
 
-function run_with_docker () {
-  if [ -z ${TARGET_CACHE} ]; then
-    echo "no target cache specified"
-    exit 1
-  fi
+function add_git_tag () {
+  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="--gittag"
+  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$(cd ${SOURCE_CACHE[0]};git rev-parse --short HEAD)"
+}
 
-  declare -a volume_args
+function add_working_dir () {
+  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="--workingdir"
+  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$TARGET_CACHE"
+}
+
+function add_volumes () {
+  volume_args=()
 
   volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock \
   -v ${TARGET_CACHE}:/application \
@@ -24,15 +29,23 @@ function run_with_docker () {
   for (( i=1; i<${#SOURCE_CACHE[@]}+1; i++ )); do
     volume_args[${#volume_args[@]}]="-v ${SOURCE_CACHE[$i-1]}:/source_$i"
   done
+}
 
-  docker run -e WORKING_DIR="$TARGET_CACHE" ${volume_args[@]} -e NUM_SOURCE_CACHES=${#SOURCE_CACHE[@]} \
+function run_with_docker () {
+  if [ -z ${TARGET_CACHE} ]; then
+    echo "no target cache specified"
+    exit 1
+  fi
+
+  add_volumes
+
+  docker run ${volume_args[@]} -e NUM_SOURCE_CACHES=${#SOURCE_CACHE[@]} \
   --privileged $DOCKER_AS_ROOT --rm $DOCKER_IMAGE "/pipeline/shared/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
 function parse_options () {
   FORWARD_OPTS=()
   SOURCE_CACHE=()
-
 
   while true ; do
       case "$1" in
@@ -54,20 +67,28 @@ function parse_options () {
       --dockersharedmem)
         DOCKER_SHARED_MEM="-v /dev/shm:/dev/shm"
         ;;
+      --*)
+        if [[ $2 =~ ^--.* || -z $2 ]]; then
+          FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        else
+          FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+          FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        fi
+        ;;
+      * )
+        break
+        ;;
       esac
       if [[ $2 =~ ^--.* || -z $2 ]]; then
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
         shift
       else
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         shift
-      fi
-      if [[ -z $1 ]]; then
-        break
       fi
   done
+
+  add_git_tag
+  add_working_dir
 }
 
 parse_options "$@"

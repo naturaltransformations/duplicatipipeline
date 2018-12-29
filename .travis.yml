@@ -26,7 +26,15 @@ env:
     - INSTALLER_FEDORA_CACHE=${TRAVIS_BUILD_DIR}/.installer_fedora_cache
     - INSTALLER_SYNOLOGY_CACHE=${TRAVIS_BUILD_DIR}/.installer_synology_cache
     - INSTALLER_DOCKER_CACHE=${TRAVIS_BUILD_DIR}/.installer_docker_cache
+    - SIGN_CACHE=${TRAVIS_BUILD_DIR}/.sign_cache
     - UPLOAD_CACHE=${TRAVIS_BUILD_DIR}/.upload_cache
+    - AUTO_UPDATE_KEY_FILE="/keys/autoupdate.key.aes"
+    - GPG_CREDENTIALS_FILE="/keys/gpg_id_passphrase.key.aes"
+    - GPG_KEY_FILE="/keys/gpg.key.aes"
+    - DOCKER_USER="duplicatipipeline"
+    - DOCKER_REPO="duplicatipipeline/duplicati"
+    - SCRIPT_DIR="$TRAVIS_BUILD_DIR"
+
 # matrix expansion within jobs would be good:
 # https://github.com/travis-ci/travis-ci/issues/8295
 
@@ -37,77 +45,101 @@ jobs:
   include:
     - stage: build
       script:
-          - ${TRAVIS_BUILD_DIR}/pipeline/shared/sync_repo.sh
-          - ./pipeline/stage_build/trigger.sh --sourcecache "${TRAVIS_BUILD_DIR}/duplicati" --targetcache "${BUILD_CACHE}" | ts
+          - ${SCRIPT_DIR}/pipeline/shared/sync_repo.sh
+          - >
+            ${SCRIPT_DIR}/pipeline/stage_build/trigger.sh
+            --sourcecache "${TRAVIS_BUILD_DIR}/duplicati"
+            --targetcache "${BUILD_CACHE}" | ts
       cache:
         directories:
           - $BUILD_CACHE
 
 
 
-    - stage: unit tests
-      cache:
-        directories:
-          - $BUILD_CACHE
-          - $HOME/download/
-      script:
-        - ./pipeline/stage_unittests/trigger.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNormal --testdata data.zip | ts
-    - stage: unit tests
-      cache:
-        directories:
-          - $BUILD_CACHE
-          - $HOME/download/
-      script:
-        - ./pipeline/stage_unittests/trigger.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories BulkNoSize --testdata data.zip | ts
-    - stage: unit tests
-      cache:
-        directories:
-          - $BUILD_CACHE
-          - $HOME/download/
-      script:
-        - ./pipeline/stage_unittests/trigger.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
-    - stage: unit tests
-      cache:
-        directories:
-          - $BUILD_CACHE
-          - $HOME/download/
-      script:
-        - ./pipeline/stage_unittests/trigger.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
-    - stage: unit tests
-      cache:
-        directories:
-          - $BUILD_CACHE
-          - $HOME/download/
-      script:
-        - ./pipeline/stage_unittests/trigger.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
+    # - stage: unit tests
+    #   cache:
+    #     directories:
+    #       - $BUILD_CACHE
+    #       - $HOME/download/
+    #   script:
+    #     - >
+    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+    #       --testcategories BulkNormal --testdata data.zip | ts
+    # - stage: unit tests
+    #   cache:
+    #     directories:
+    #       - $BUILD_CACHE
+    #       - $HOME/download/
+    #   script:
+    #     - >
+    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+    #       --testcategories BulkNoSize --testdata data.zip | ts
+    # - stage: unit tests
+    #   cache:
+    #     directories:
+    #       - $BUILD_CACHE
+    #       - $HOME/download/
+    #   script:
+    #     - >
+    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+    #       --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
+    # - stage: unit tests
+    #   cache:
+    #     directories:
+    #       - $BUILD_CACHE
+    #       - $HOME/download/
+    #   script:
+    #     - >
+    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
+    # - stage: unit tests
+    #   cache:
+    #     directories:
+    #       - $BUILD_CACHE
+    #       - $HOME/download/
+    #   script:
+    #     - >
+    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+    #       --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
 
 
 
-    - stage: integration tests
-      cache:
-        directories:
-          - $BUILD_CACHE
-          - $HOME/download/
-      script:
-        - ./pipeline/stage_integrationtests/trigger.sh --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
-      addons:
-        sauce_connect:
-          username: $SAUCE_USERNAME
-          access_key: $SAUCE_ACCESS_KEY
+    # - stage: integration tests
+    #   cache:
+    #     directories:
+    #       - $BUILD_CACHE
+    #       - $HOME/download/
+    #   script:
+    #     - >
+    #       ${SCRIPT_DIR}/pipeline/stage_integrationtests/trigger.sh
+    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
+    #   addons:
+    #     sauce_connect:
+    #       username: $SAUCE_USERNAME
+    #       access_key: $SAUCE_ACCESS_KEY
 
 
 
-    - stage: create archive
+    - stage: create main package
       cache:
         directories:
           - $BUILD_CACHE
           - $ARCHIVE_CACHE
+        timeout: 1800
       script:
-        - ./pipeline/stage_createarchive/trigger.sh --signingkeyfilepassword "sdfsdgsagfwefefqfq" --signingkeyfile "/keys/bla.key" --sourcecache $BUILD_CACHE --targetcache $ARCHIVE_CACHE | ts
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_createarchive/trigger.sh
+          --sourcecache "${ROOT_DIR}/${BUILD_CACHE}"
+          --targetcache "${ROOT_DIR}/${ARCHIVE_CACHE}"
+          --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD"
+          --signingkeyfile "$AUTO_UPDATE_KEY_FILE" | ts
 
 
-
-    - stage: create installers
+    - stage: create platform packages
       cache:
         directories:
           - $ARCHIVE_CACHE
@@ -115,21 +147,62 @@ jobs:
           - $INSTALLER_FEDORA_CACHE
           - $INSTALLER_SYNOLOGY_CACHE
           - $INSTALLER_DOCKER_CACHE
-        timeout: 1000
+        timeout: 1800
       script:
-        - ./pipeline/stage_createinstallers/trigger.sh --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_DEBIAN_CACHE --installers debian | ts
-        - ./pipeline/stage_createinstallers/trigger.sh --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_FEDORA_CACHE --installers fedora | ts
-        - ./pipeline/stage_createinstallers/trigger.sh --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_SYNOLOGY_CACHE --installers synology | ts
-        - ./pipeline/stage_createinstallers/trigger.sh --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_DOCKER_CACHE --installers docker | ts
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
+          --sourcecache $ARCHIVE_CACHE
+          --targetcache $INSTALLER_DEBIAN_CACHE --installers debian | ts
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
+          --sourcecache $ARCHIVE_CACHE
+          --targetcache $INSTALLER_FEDORA_CACHE --installers fedora | ts
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
+          --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_SYNOLOGY_CACHE
+          --installers synology | ts
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
+          --sourcecache $ARCHIVE_CACHE
+          --targetcache $INSTALLER_DOCKER_CACHE
+          --dockerrepo $DOCKER_REPO
+          --installers docker | ts
 
-
-
-    - stage: upload
+    - stage: sign binaries
       cache:
         directories:
           - $INSTALLER_DEBIAN_CACHE
           - $INSTALLER_FEDORA_CACHE
           - $INSTALLER_SYNOLOGY_CACHE
-          - $INSTALLER_DOCKER_CACHE
+          - $SIGN_CACHE
+        timeout: 1800
       script:
-        - ./pipeline/stage_deploy/trigger.sh --sourcecache "$INSTALLER_DEBIAN_CACHE" --sourcecache "$INSTALLER_FEDORA_CACHE" --sourcecache "$INSTALLER_SYNOLOGY_CACHE" --sourcecache "$INSTALLER_DOCKER_CACHE"  --targetcache "$UPLOAD_CACHE" --dockeruser "$DOCKER_USER" --dockerpassword "$DOCKER_PASSWORD" --awskeyid "$AWS_ACCESS_KEY_ID" --awssecret "$AWS_SECRET_ACCESS_KEY" --awsbucket "$AWS_BUCKET_URI" | ts
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_sign/trigger.sh
+          --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD"
+          --gpgcredentialsfile "$GPG_CREDENTIALS_FILE"
+          --gpgkeyfile "$GPG_KEY_FILE"
+          --sourcecache "${INSTALLER_DEBIAN_CACHE}"
+          --sourcecache "${INSTALLER_FEDORA_CACHE}"
+          --sourcecache "${INSTALLER_SYNOLOGY_CACHE}"
+          --targetcache "${SIGN_CACHE}" | ts
+
+
+    - stage: upload to docker and aws
+      cache:
+        directories:
+          - $INSTALLER_DOCKER_CACHE
+          - $SIGN_CACHE
+        timeout: 1800
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_deploy/trigger.sh
+          --awskeyid $AWS_ACCESS_KEY_ID
+          --awssecret $AWS_SECRET_ACCESS_KEY
+          --awsbucket $AWS_BUCKET_URI
+          --dockeruser $DOCKER_USER
+          --dockerpassword $DOCKER_PASSWORD
+          --dockerrepo $DOCKER_REPO
+          --sourcecache "${SIGN_CACHE}"
+          --sourcecache "${INSTALLER_DOCKER_CACHE}"
+          --targetcache "${UPLOAD_CACHE}" | ts

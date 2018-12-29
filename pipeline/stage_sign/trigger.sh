@@ -2,11 +2,10 @@
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 . "${SCRIPT_DIR}/../shared/error_handling.sh"
 
-PACKAGES="zip rsync awscli coreutils perl docker.io mono-complete gpg"
-#PACKAGES="rsync"
+PACKAGES="zip rsync coreutils perl mono-complete gpg"
 "${SCRIPT_DIR}/../shared/start_docker.sh" "$@" \
 --dockerimage ubuntu \
 --dockerpackages "$PACKAGES" \
 --gpgpath "/usr/bin/gpg" \
 --dockermountkeys \
---dockercommand "/pipeline/stage_deploy/job.sh"
+--dockercommand "/pipeline/stage_sign/job.sh"

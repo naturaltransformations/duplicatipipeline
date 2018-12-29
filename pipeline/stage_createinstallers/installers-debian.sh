@@ -24,7 +24,7 @@ function build_installer () {
 
     docker run --rm --workdir "/builddir/${RELEASE_NAME_SIMPLE}" --volume "${WORKING_DIR}/Installer/debian/":/builddir:rw "duplicati/debian-build:latest" dpkg-buildpackage
 
-	mv "${installer_dir}/${DEBNAME}" "${UPDATE_TARGET}"
+    mv "${installer_dir}/${DEBNAME}" "${UPDATE_TARGET}"
 }
 
 travis_mark_begin "BUILDING DEBIAN PACKAGE"

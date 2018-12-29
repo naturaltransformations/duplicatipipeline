@@ -19,56 +19,6 @@ function get_keyfile_password () {
 	fi
 }
 
-function set_gpg_data () {
-	if [[ $SIGNED != true ]]; then
-		return
-	fi
-
-	get_keyfile_password
-
-	GPGDATA=$(mono "BuildTools/AutoUpdateBuilder/bin/Debug/SharpAESCrypt.exe" d "${KEYFILE_PASSWORD}" "${GPG_KEYFILE}")
-	if [ ! $? -eq 0 ]; then
-		echo "Decrypting GPG keyfile failed"
-		exit 1
-	fi
-	GPGID=$(echo "${GPGDATA}" | head -n 1)
-	GPGKEY=$(echo "${GPGDATA}" | head -n 2 | tail -n 1)
-}
-
-function sign_with_authenticode () {
-	if [ ! -f "${AUTHENTICODE_PFXFILE}" ] || [ ! -f "${AUTHENTICODE_PASSWORD}" ]; then
-		echo "Skipped authenticode signing as files are missing"
-		return
-	fi
-
-	echo "Performing authenticode signing of installers"
-
-    get_keyfile_password
-
-	if [ "z${PFX_PASS}" == "z" ]; then
-        PFX_PASS=$("${MONO}" "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/bin/Debug/SharpAESCrypt.exe" d "${KEYFILE_PASSWORD}" "${AUTHENTICODE_PASSWORD}")
-
-        DECRYPT_STATUS=$?
-        if [ "${DECRYPT_STATUS}" -ne 0 ]; then
-            echo "Failed to decrypt, SharpAESCrypt gave status ${DECRYPT_STATUS}, exiting"
-            exit 4
-        fi
-
-        if [ "x${PFX_PASS}" == "x" ]; then
-            echo "Failed to decrypt, SharpAESCrypt gave empty password, exiting"
-            exit 4
-        fi
-    fi
-
-	NEST=""
-	for hashalg in sha1 sha256; do
-		SIGN_MSG=$(osslsigncode sign -pkcs12 "${AUTHENTICODE_PFXFILE}" -pass "${PFX_PASS}" -n "Duplicati" -i "http://www.duplicati.com" -h "${hashalg}" ${NEST} -t "http://timestamp.verisign.com/scripts/timstamp.dll" -in "$1" -out tmpfile)
-		if [ "${SIGN_MSG}" != "Succeeded" ]; then echo "${SIGN_MSG}"; fi
-		mv tmpfile "${ZIPFILE}"
-		NEST="-nest"
-	done
-}
-
 install_oem_files () {
     SOURCE_DIR=$1
     TARGET_DIR=$2
@@ -94,8 +44,7 @@ install_oem_files () {
 
 function parse_duplicati_options () {
   RELEASE_VERSION="2.0.4.$(cat "$DUPLICATI_ROOT"/Updates/build_version.txt)"
-  RELEASE_TYPE="canary"
-  SIGNED=false
+  RELEASE_TYPE="nightly"
 
   while true ; do
       case "$1" in
@@ -105,22 +54,41 @@ function parse_duplicati_options () {
       --releasetype)
         RELEASE_TYPE="$2"
         ;;
+      --signingkeyfilepassword)
+        SIGNING_KEYFILE_PASSWORD="$2"
+        ;;
+      --gittag)
+        GIT_TAG="$2"
+        ;;
+      --workingdir)
+        WORKING_DIR="$2"
+        ;;
+      --dockerrepo)
+        DOCKER_REPO="$2"
+        ;;
+      --*)
+        if [[ $2 =~ ^--.* || -z $2 ]]; then
+          FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+        else
+          FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+          FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+        fi
+        ;;
+      * )
+        break
+        ;;
       esac
       if [[ $2 =~ ^--.* || -z $2 ]]; then
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
         shift
       else
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         shift
-      fi
-      if [[ -z $1 ]]; then
-        break
       fi
   done
 
-  export RELEASE_VERSION="$RELEASE_VERSION"
+  export WORKING_DIR
+  export RELEASE_VERSION
+  export DOCKER_REPO
   export RELEASE_TYPE="$RELEASE_TYPE"
   export RELEASE_CHANGELOG_FILE="${DUPLICATI_ROOT}/changelog.txt"
   export RELEASE_CHANGELOG_NEWS_FILE="${DUPLICATI_ROOT}/changelog-news.txt" # never in repo due to .gitignore
@@ -131,12 +99,9 @@ function parse_duplicati_options () {
   export UPDATE_SOURCE="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_source-${RELEASE_VERSION}"
   export UPDATE_TARGET="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_target-${RELEASE_VERSION}"
   export ZIPFILE="${UPDATE_TARGET}/${RELEASE_FILE_NAME}.zip"
-  export DOCKER_REPOSITORY="duplicatiautomated/duplicati"
 #  BUILDTAG_RAW=$(echo "${RELEASE_FILE_NAME}" | cut -d "." -f 1-4 | cut -d "-" -f 2-4)
   export AUTHENTICODE_PFXFILE="${HOME}/.config/signkeys/Duplicati/authenticode.pfx"
   export AUTHENTICODE_PASSWORD="${HOME}/.config/signkeys/Duplicati/authenticode.key"
-  export GPG_KEYFILE="${HOME}/.config/signkeys/Duplicati/updater-gpgkey.key"
-  export GPG=/usr/local/bin/gpg2
-  # Newer GPG needs this to allow input from a non-terminal
-  export GPG_TTY=$(tty)
+  export BUILDTAG="${RELEASE_TYPE}_${RELEASE_TIMESTAMP}_${GIT_TAG}"
+  export BUILDTAG=${BUILDTAG//-}
 }

@@ -40,7 +40,7 @@ function build_installer () {
         "duplicati/fedora-build:latest" \
         rpmbuild -bb duplicati-binary.spec
 
-    cp "${RPMBUILD}/RPMS/noarch/"*.rpm ${UPDATE_TARGET}/
+    mv "${RPMBUILD}/RPMS/noarch/"*.rpm ${UPDATE_TARGET}/
 }
 
 travis_mark_begin "BUILDING FEDORA PACKAGE"

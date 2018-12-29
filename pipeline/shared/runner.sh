@@ -20,6 +20,7 @@ function setup () {
    fi
 
    if [ -f /usr/bin/apt-get ]; then
+      export DEBIAN_FRONTEND=noninteractive
       apt-get update && apt-get install -y $DOCKER_PACKAGES
       return
    fi
@@ -28,24 +29,29 @@ function setup () {
 function parse_options () {
   while true ; do
       case "$1" in
-      --dockercommand)
+        --dockercommand)
           DOCKER_COMMAND="$2"
           ;;
-      --dockerpackages)
+        --dockerpackages)
           DOCKER_PACKAGES="$2"
+          ;;
+        --*)
+          if [[ $2 =~ ^--.* || -z $2 ]]; then
+            FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+          else
+            FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+            FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
+          fi
+          ;;
+        * )
+          break
           ;;
       esac
       if [[ $2 =~ ^--.* || -z $2 ]]; then
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
         shift
       else
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         shift
-      fi
-      if [[ -z $1 ]]; then
-        break
       fi
   done
 }

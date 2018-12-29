@@ -3,7 +3,7 @@
 . /pipeline/shared/duplicati.sh
 
 function build () {
-    nuget restore Duplicati.sln
+    nuget restore "${DUPLICATI_ROOT}"/Duplicati.sln
 
     if [ ! -d "${DUPLICATI_ROOT}"/packages/SharpCompress.0.18.2 ]; then
         ln -s "${DUPLICATI_ROOT}"/packages/sharpcompress.0.18.2 "${DUPLICATI_ROOT}"/packages/SharpCompress.0.18.2
@@ -15,9 +15,13 @@ function build () {
 
 	# build autoupdate
 	nuget restore "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/AutoUpdateBuilder.sln"
-	nuget restore "${DUPLICATI_ROOT}/Duplicati.sln"
-	msbuild /p:Configuration=Release "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/AutoUpdateBuilder.sln"
+    msbuild /p:Configuration=Release "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/AutoUpdateBuilder.sln"
 
+    # build gpg signing tool
+	nuget restore "${DUPLICATI_ROOT}/BuildTools/GnupgSigningTool/GnupgSigningTool.sln"
+    msbuild /p:Configuration=Release "${DUPLICATI_ROOT}/BuildTools/GnupgSigningTool/GnupgSigningTool.sln"
+
+    # build duplicati
 	msbuild /p:DefineConstants=__MonoCS__ /p:DefineConstants=ENABLE_GTK /p:Configuration=Release "${DUPLICATI_ROOT}/Duplicati.sln"
 
     msbuild /p:Configuration=Release "${DUPLICATI_ROOT}"/Duplicati.sln
