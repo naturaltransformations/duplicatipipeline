@@ -4,13 +4,12 @@
 
 function sync_dirs () {
   rsync_delete_option="--delete"
-  for (( i=1; i<$NUM_SOURCE_DIR+1; i++ )); do
+  for (( i=1; i<$SOURCE_DIR_NUM+1; i++ )); do
     travis_mark_begin "SYNCING DIR source_${i}"
     rsync -a $rsync_delete_option "/source_${i}/" "/application/"
     unset rsync_delete_option
     travis_mark_end "SYNCING DIR source_${i}"
   done
-
 }
 
 function setup () {
@@ -26,6 +25,15 @@ function setup () {
    fi
 }
 
+function clean_up () {
+  if [[ -z $KEEP_FILTER ]]; then
+    return
+  fi
+
+  find . -type f ! -regex "${KEEP_FILTER}" -delete
+  find . -type d -empty -delete
+}
+
 function parse_options () {
   while true ; do
       case "$1" in
@@ -34,6 +42,12 @@ function parse_options () {
           ;;
         --dockerpackages)
           DOCKER_PACKAGES="$2"
+          ;;
+        --sourcedirnum)
+          SOURCE_DIR_NUM="$2"
+          ;;
+        --keepfilter)
+          KEEP_FILTER="$2"
           ;;
         --*)
           if [[ $2 =~ ^--.* || -z $2 ]]; then
@@ -62,3 +76,4 @@ setup
 sync_dirs
 cd /application
 $DOCKER_COMMAND "${FORWARD_OPTS[@]}"
+clean_up

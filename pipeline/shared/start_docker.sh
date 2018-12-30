@@ -8,14 +8,9 @@ function pull_docker_image () {
   travis_mark_end "PULL MINIMAL DOCKER IMAGE"
 }
 
-function add_git_tag () {
-  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="--gittag"
-  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$(cd ${SOURCE_DIR[0]};git rev-parse --short HEAD)"
-}
-
-function add_working_dir () {
-  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="--workingdir"
-  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$TARGET_DIR"
+function add_option () {
+  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
+  FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
 }
 
 function add_volumes () {
@@ -39,7 +34,7 @@ function run_with_docker () {
 
   add_volumes
 
-  docker run ${volume_args[@]} -e NUM_SOURCE_DIRS=${#SOURCE_DIR[@]} \
+  docker run ${volume_args[@]} \
   --privileged $DOCKER_AS_ROOT --rm $DOCKER_IMAGE "/pipeline/shared/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
@@ -87,8 +82,9 @@ function parse_options () {
       fi
   done
 
-  add_git_tag
-  add_working_dir
+  add_option "--gittag" "$(cd ${SOURCE_DIR[0]};git rev-parse --short HEAD)"
+  add_option "--workingdir" "$TARGET_DIR"
+  add_option "--sourcedirnum" ${#SOURCE_DIR[@]}
 }
 
 parse_options "$@"
