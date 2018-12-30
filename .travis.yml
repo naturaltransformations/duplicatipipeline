@@ -56,71 +56,71 @@ jobs:
 
 
 
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - >
-    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
-    #       --testcategories BulkNormal --testdata data.zip | ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - >
-    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
-    #       --testcategories BulkNoSize --testdata data.zip | ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - >
-    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
-    #       --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - >
-    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
-    # - stage: unit tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - >
-    #       ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
-    #       --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --testcategories BulkNormal --testdata data.zip | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --testcategories BulkNoSize --testdata data.zip | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
+    - stage: unit tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
+          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
 
 
 
-    # - stage: integration tests
-    #   cache:
-    #     directories:
-    #       - $BUILD_CACHE
-    #       - $HOME/download/
-    #   script:
-    #     - >
-    #       ${SCRIPT_DIR}/pipeline/stage_integrationtests/trigger.sh
-    #       --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
-    #   addons:
-    #     sauce_connect:
-    #       username: $SAUCE_USERNAME
-    #       access_key: $SAUCE_ACCESS_KEY
+    - stage: integration tests
+      cache:
+        directories:
+          - $BUILD_CACHE
+          - $HOME/download/
+      script:
+        - >
+          ${SCRIPT_DIR}/pipeline/stage_integrationtests/trigger.sh
+          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
+      addons:
+        sauce_connect:
+          username: $SAUCE_USERNAME
+          access_key: $SAUCE_ACCESS_KEY
 
 
 
