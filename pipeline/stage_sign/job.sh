@@ -43,6 +43,9 @@ function sign_binaries_with_authenticode  () {
 	then
 		return
 	fi
+  export AUTHENTICODE_PFXFILE="${HOME}/.config/signkeys/Duplicati/authenticode.pfx"
+  export AUTHENTICODE_PASSWORD="${HOME}/.config/signkeys/Duplicati/authenticode.key"
+
 
 	get_keyfile_password
 

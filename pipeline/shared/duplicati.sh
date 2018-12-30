@@ -4,21 +4,6 @@
 export DUPLICATI_ROOT="/application/"
 declare -a FORWARD_OPTS
 
-function get_keyfile_password () {
-	if [ "z${KEYFILE_PASSWORD}" == "z" ]; then
-		echo -n "Enter keyfile password: "
-		read -s KEYFILE_PASSWORD
-		echo
-
-        if [ "z${KEYFILE_PASSWORD}" == "z" ]; then
-            echo "No password entered, quitting"
-            exit 0
-        fi
-
-        export KEYFILE_PASSWORD
-	fi
-}
-
 install_oem_files () {
     SOURCE_DIR=$1
     TARGET_DIR=$2
@@ -96,12 +81,10 @@ function parse_duplicati_options () {
   export RELEASE_NAME="${RELEASE_VERSION}_${RELEASE_TYPE}_${RELEASE_TIMESTAMP}"
   export RELEASE_FILE_NAME="duplicati-${RELEASE_NAME}"
   export RELEASE_NAME_SIMPLE="duplicati-${RELEASE_VERSION}"
-  export UPDATE_SOURCE="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_source-${RELEASE_VERSION}"
-  export UPDATE_TARGET="${DUPLICATI_ROOT}/Updates/build/${RELEASE_TYPE}_target-${RELEASE_VERSION}"
-  export ZIPFILE="${UPDATE_TARGET}/${RELEASE_FILE_NAME}.zip"
-#  BUILDTAG_RAW=$(echo "${RELEASE_FILE_NAME}" | cut -d "." -f 1-4 | cut -d "-" -f 2-4)
-  export AUTHENTICODE_PFXFILE="${HOME}/.config/signkeys/Duplicati/authenticode.pfx"
-  export AUTHENTICODE_PASSWORD="${HOME}/.config/signkeys/Duplicati/authenticode.key"
   export BUILDTAG="${RELEASE_TYPE}_${RELEASE_TIMESTAMP}_${GIT_TAG}"
   export BUILDTAG=${BUILDTAG//-}
+  export UPDATE_SOURCE="${DUPLICATI_ROOT}/Updates/build/${BUILDTAG}_source"
+  export UPDATE_TARGET="${DUPLICATI_ROOT}/Updates/build/${BUILDTAG}_target"
+  export ZIPFILE="${UPDATE_TARGET}/${RELEASE_FILE_NAME}.zip"
+#  BUILDTAG_RAW=$(echo "${RELEASE_FILE_NAME}" | cut -d "." -f 1-4 | cut -d "-" -f 2-4)
 }
