@@ -19,15 +19,15 @@ env:
     - secure: "ijaQDcVcMo/utuP514FiDZVGR5LJbATWmYDmgRIIaI0YG2Rk6uuJp9XXDXr8sx66JWttPGgs7Htqfy50VKHdr7nsfyCQCRNGmqF+OJeUgAQMj5spxn9A7PZY9+GVhnXoJ06wvYjCv5MPeLBMDK/KpIM5Ny5IG+TKzQy4U7Dyg0riMUT61aqzxSjTGfHZPmaqBICJTzsRmeGHglemFUz/1B4NAN+IeAtXoH9YIfA2LjJfYmMLckPgFQLKN/tQRaGPWXh77y0qVgA++K8UVu5W3yGo3JXBPDdabGgKs9BPlfN5/Ixnkcy6ekAubDA/Aspur9x7/szj4/AnGMY6frNB33nQcnJQZ/51GYKr6CXCmjoJQuWc8ZKdEMqDn3w/kyEzvluSjAsJNRVboeWPE4VfpAeUBsjQ+TuEQi8WXhN8VJgZV7yCkVlZTVbhtOxMPsBiFb74lpWC2iQuWLJv9ED6vyXZVzZhNtfjXNXNZzIwYxbcd7I0ZQ8fmDstFnvBJveJby2ZRpECXTbc03eIUq1SAaVJJY2r47RD1PwVqM3xvUTljIqtKdyIz915mEOjqG1BnCDaiGHYJ4byuDDeIUZO9X70s60Gh4hupZA2Ruup0v7SfYgkto6aNcStd0NYd716Vd7hqXNTp6nu01L5YYJDY4h5sHyBXVXbxCKlUb01kUw="
     - USAGEREPORTER_Duplicati_LEVEL=none
     - AUTOUPDATER_Duplicati_SKIP_UPDATE=1
-    - BUILD_CACHE=${TRAVIS_BUILD_DIR}/.build_cache
-    - TEST_CACHE=${TRAVIS_BUILD_DIR}/.test_cache
-    - ARCHIVE_CACHE=${TRAVIS_BUILD_DIR}/.zip_cache
-    - INSTALLER_DEBIAN_CACHE=${TRAVIS_BUILD_DIR}/.installer_debian_cache
-    - INSTALLER_FEDORA_CACHE=${TRAVIS_BUILD_DIR}/.installer_fedora_cache
-    - INSTALLER_SYNOLOGY_CACHE=${TRAVIS_BUILD_DIR}/.installer_synology_cache
-    - INSTALLER_DOCKER_CACHE=${TRAVIS_BUILD_DIR}/.installer_docker_cache
-    - SIGN_CACHE=${TRAVIS_BUILD_DIR}/.sign_cache
-    - UPLOAD_CACHE=${TRAVIS_BUILD_DIR}/.upload_cache
+    - BUILD_DIR=${TRAVIS_BUILD_DIR}/.build
+    - TEST_DIR=${TRAVIS_BUILD_DIR}/.test
+    - ARCHIVE_DIR=${TRAVIS_BUILD_DIR}/.zip
+    - PACKAGE_DEBIAN_DIR=${TRAVIS_BUILD_DIR}/.package_debian
+    - PACKAGE_FEDORA_DIR=${TRAVIS_BUILD_DIR}/.package_fedora
+    - PACKAGE_SYNOLOGY_DIR=${TRAVIS_BUILD_DIR}/.package_synology
+    - PACKAGE_DOCKER_DIR=${TRAVIS_BUILD_DIR}/.package_docker
+    - SIGN_DIR=${TRAVIS_BUILD_DIR}/.sign
+    - UPLOAD_DIR=${TRAVIS_BUILD_DIR}/.upload
     - AUTO_UPDATE_KEY_FILE="/keys/autoupdate.key.aes"
     - GPG_CREDENTIALS_FILE="/keys/gpg_id_passphrase.key.aes"
     - GPG_KEY_FILE="/keys/gpg.key.aes"
@@ -41,6 +41,10 @@ env:
 # There is one cache per branch, so concurrent builds on different branches possible!
 # DO NOT SET ENVIRONMENT VARIABLES WITHIN JOBS, OR CACHES WILL NOT BE SHARED AMONGST JOBS!
 
+cache:
+  directories:
+    - $BUILD_DIR
+
 jobs:
   include:
     - stage: build
@@ -48,62 +52,53 @@ jobs:
           - ${SCRIPT_DIR}/pipeline/shared/sync_repo.sh
           - >
             ${SCRIPT_DIR}/pipeline/stage_build/trigger.sh
-            --sourcecache "${TRAVIS_BUILD_DIR}/duplicati"
-            --targetcache "${BUILD_CACHE}" | ts
-      cache:
-        directories:
-          - $BUILD_CACHE
-
+            --sourcedir "${TRAVIS_BUILD_DIR}/duplicati"
+            --targetdir "${BUILD_DIR}" | ts
 
 
     - stage: unit tests
       cache:
         directories:
-          - $BUILD_CACHE
           - $HOME/download/
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --sourcedir $BUILD_DIR --targetdir $TEST_DIR
           --testcategories BulkNormal --testdata data.zip | ts
     - stage: unit tests
       cache:
         directories:
-          - $BUILD_CACHE
           - $HOME/download/
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --sourcedir $BUILD_DIR --targetdir $TEST_DIR
           --testcategories BulkNoSize --testdata data.zip | ts
     - stage: unit tests
       cache:
         directories:
-          - $BUILD_CACHE
           - $HOME/download/
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --sourcedir $BUILD_DIR --targetdir $TEST_DIR
           --testcategories SVNDataLong,SVNData --testdata DSMCBE.zip |  ts
     - stage: unit tests
       cache:
         directories:
-          - $BUILD_CACHE
           - $HOME/download/
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE --testcategories Border | ts
+          --sourcedir $BUILD_DIR --targetdir $TEST_DIR --testcategories Border | ts
     - stage: unit tests
       cache:
         directories:
-          - $BUILD_CACHE
           - $HOME/download/
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE
+          --sourcedir $BUILD_DIR --targetdir $TEST_DIR
           --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
 
 
@@ -111,12 +106,11 @@ jobs:
     - stage: integration tests
       cache:
         directories:
-          - $BUILD_CACHE
           - $HOME/download/
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_integrationtests/trigger.sh
-          --sourcecache $BUILD_CACHE --targetcache $TEST_CACHE | ts
+          --sourcedir $BUILD_DIR --targetdir $TEST_DIR | ts
       addons:
         sauce_connect:
           username: $SAUCE_USERNAME
@@ -127,14 +121,13 @@ jobs:
     - stage: create main package
       cache:
         directories:
-          - $BUILD_CACHE
-          - $ARCHIVE_CACHE
+          - ${ARCHIVE_DIR}/Updates/build
         timeout: 1800
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_createarchive/trigger.sh
-          --sourcecache "${ROOT_DIR}/${BUILD_CACHE}"
-          --targetcache "${ROOT_DIR}/${ARCHIVE_CACHE}"
+          --sourcedir "${BUILD_DIR}"
+          --targetdir "${ARCHIVE_DIR}"
           --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD"
           --signingkeyfile "$AUTO_UPDATE_KEY_FILE" | ts
 
@@ -142,39 +135,43 @@ jobs:
     - stage: create platform packages
       cache:
         directories:
-          - $ARCHIVE_CACHE
-          - $INSTALLER_DEBIAN_CACHE
-          - $INSTALLER_FEDORA_CACHE
-          - $INSTALLER_SYNOLOGY_CACHE
-          - $INSTALLER_DOCKER_CACHE
+          - ${ARCHIVE_DIR}/Updates/build
+          - ${PACKAGE_DEBIAN_DIR}/Updates/build
+          - ${PACKAGE_FEDORA_DIR}/Updates/build
+          - ${PACKAGE_SYNOLOGY_DIR}/Updates/build
+          - ${PACKAGE_DOCKER_DIR}/Updates/build
         timeout: 1800
       script:
         - >
           ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcecache $ARCHIVE_CACHE
-          --targetcache $INSTALLER_DEBIAN_CACHE --installers debian | ts
+          --sourcedir $BUILD_DIR
+          --sourcedir $ARCHIVE_DIR
+          --targetdir $PACKAGE_DEBIAN_DIR --installers debian | ts
         - >
           ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcecache $ARCHIVE_CACHE
-          --targetcache $INSTALLER_FEDORA_CACHE --installers fedora | ts
+          --sourcedir $BUILD_DIR
+          --sourcedir $ARCHIVE_DIR
+          --targetdir $PACKAGE_FEDORA_DIR --installers fedora | ts
         - >
           ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcecache $ARCHIVE_CACHE --targetcache $INSTALLER_SYNOLOGY_CACHE
+          --sourcedir $BUILD_DIR
+          --sourcedir $ARCHIVE_DIR --targetdir $PACKAGE_SYNOLOGY_DIR
           --installers synology | ts
         - >
           ${SCRIPT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcecache $ARCHIVE_CACHE
-          --targetcache $INSTALLER_DOCKER_CACHE
+          --sourcedir $BUILD_DIR
+          --sourcedir $ARCHIVE_DIR
+          --targetdir $PACKAGE_DOCKER_DIR
           --dockerrepo $DOCKER_REPO
           --installers docker | ts
 
     - stage: sign binaries
       cache:
         directories:
-          - $INSTALLER_DEBIAN_CACHE
-          - $INSTALLER_FEDORA_CACHE
-          - $INSTALLER_SYNOLOGY_CACHE
-          - $SIGN_CACHE
+          - ${PACKAGE_DEBIAN_DIR}/Updates/build
+          - ${PACKAGE_FEDORA_DIR}/Updates/build
+          - ${PACKAGE_SYNOLOGY_DIR}/Updates/build
+          - ${SIGN_DIR}/Updates/build
         timeout: 1800
       script:
         - >
@@ -182,17 +179,18 @@ jobs:
           --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD"
           --gpgcredentialsfile "$GPG_CREDENTIALS_FILE"
           --gpgkeyfile "$GPG_KEY_FILE"
-          --sourcecache "${INSTALLER_DEBIAN_CACHE}"
-          --sourcecache "${INSTALLER_FEDORA_CACHE}"
-          --sourcecache "${INSTALLER_SYNOLOGY_CACHE}"
-          --targetcache "${SIGN_CACHE}" | ts
+          --sourcedir "${BUILD_DIR}"
+          --sourcedir "${PACKAGE_DEBIAN_DIR}"
+          --sourcedir "${PACKAGE_FEDORA_DIR}"
+          --sourcedir "${PACKAGE_SYNOLOGY_DIR}"
+          --targetdir "${SIGN_DIR}" | ts
 
 
     - stage: upload to docker and aws
       cache:
         directories:
-          - $INSTALLER_DOCKER_CACHE
-          - $SIGN_CACHE
+          - ${PACKAGE_DOCKER_DIR}/Updates/build
+          - ${SIGN_DIR}/Updates/build
         timeout: 1800
       script:
         - >
@@ -203,6 +201,7 @@ jobs:
           --dockeruser $DOCKER_USER
           --dockerpassword $DOCKER_PASSWORD
           --dockerrepo $DOCKER_REPO
-          --sourcecache "${SIGN_CACHE}"
-          --sourcecache "${INSTALLER_DOCKER_CACHE}"
-          --targetcache "${UPLOAD_CACHE}" | ts
+          --sourcedir "${BUILD_DIR}"
+          --sourcedir "${SIGN_DIR}"
+          --sourcedir "${PACKAGE_DOCKER_DIR}"
+          --targetdir "${UPLOAD_DIR}" | ts

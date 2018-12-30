@@ -2,13 +2,13 @@
 . "$( cd "$(dirname "$0")" ; pwd -P )/error_handling.sh"
 . "$( cd "$(dirname "$0")" ; pwd -P )/markers.sh"
 
-function sync_cache () {
+function sync_dirs () {
   rsync_delete_option="--delete"
-  for (( i=1; i<$NUM_SOURCE_CACHES+1; i++ )); do
-    travis_mark_begin "SYNCING CACHE source_${i}"
+  for (( i=1; i<$NUM_SOURCE_DIR+1; i++ )); do
+    travis_mark_begin "SYNCING DIR source_${i}"
     rsync -a $rsync_delete_option "/source_${i}/" "/application/"
     unset rsync_delete_option
-    travis_mark_end "SYNCING CACHE source_${i}"
+    travis_mark_end "SYNCING DIR source_${i}"
   done
 
 }
@@ -59,6 +59,6 @@ function parse_options () {
 parse_options "$@"
 
 setup
-sync_cache
+sync_dirs
 cd /application
 $DOCKER_COMMAND "${FORWARD_OPTS[@]}"
