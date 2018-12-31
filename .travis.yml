@@ -41,13 +41,13 @@ env:
 # There is one cache per branch, so concurrent builds on different branches possible!
 # DO NOT SET ENVIRONMENT VARIABLES WITHIN JOBS, OR CACHES WILL NOT BE SHARED AMONGST JOBS!
 
-cache:
-  directories:
-    - $BUILD_DIR
 
 jobs:
   include:
     - stage: build
+      cache:
+        directories:
+          - $BUILD_DIR
       script:
           - ${ROOT_DIR}/pipeline/shared/sync_repo.sh
           - >
@@ -60,6 +60,7 @@ jobs:
       cache:
         directories:
           - $HOME/download/
+          - $BUILD_DIR
       script:
         - >
           ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
@@ -71,6 +72,7 @@ jobs:
       cache:
         directories:
           - $HOME/download/
+          - $BUILD_DIR
       script:
         - >
           ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
@@ -82,6 +84,7 @@ jobs:
       cache:
         directories:
           - $HOME/download/
+          - $BUILD_DIR
       script:
         - >
           ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
@@ -93,6 +96,7 @@ jobs:
       cache:
         directories:
           - $HOME/download/
+          - $BUILD_DIR
       script:
         - >
           ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
@@ -103,6 +107,7 @@ jobs:
       cache:
         directories:
           - $HOME/download/
+          - $BUILD_DIR
       script:
         - >
           ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
@@ -116,6 +121,7 @@ jobs:
       cache:
         directories:
           - $HOME/download/
+          - $BUILD_DIR
       script:
         - >
           ${ROOT_DIR}/pipeline/stage_integrationtests/trigger.sh
@@ -132,6 +138,7 @@ jobs:
       cache:
         directories:
           - ${ARCHIVE_DIR}
+          - $BUILD_DIR
         timeout: 1800
       script:
         - >
@@ -146,6 +153,7 @@ jobs:
     - stage: create platform packages
       cache:
         directories:
+          - $BUILD_DIR
           - ${ARCHIVE_DIR}
           - ${PACKAGE_DEBIAN_DIR}
           - ${PACKAGE_FEDORA_DIR}
@@ -186,6 +194,7 @@ jobs:
     - stage: sign binaries
       cache:
         directories:
+          - $BUILD_DIR
           - ${PACKAGE_DEBIAN_DIR}
           - ${PACKAGE_FEDORA_DIR}
           - ${PACKAGE_SYNOLOGY_DIR}
@@ -208,6 +217,7 @@ jobs:
     - stage: upload to docker and aws
       cache:
         directories:
+          - $BUILD_DIR
           - ${PACKAGE_DOCKER_DIR}
           - ${SIGN_DIR}
         timeout: 1800
