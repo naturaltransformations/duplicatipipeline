@@ -26,15 +26,24 @@ function setup () {
 }
 
 function clean_up () {
-  if [[ -z $KEEP_FILTER ]]; then
+  if [[ -z $KEEP_TARGET_FILTER ]]; then
     return
   fi
 
-  find . -type f ! -regex "${KEEP_FILTER}" -delete
+  cd /application
+  find . -type f ! -regex "${KEEP_TARGET_FILTER}" -delete
   find . -type d -empty -delete
+
+  for (( i=1; i<${#KEEP_SOURCE_FILTER[@]}+1; i++ )); do
+    cd /source_${i}
+    find . -type f ! -regex "${KEEP_SOURCE_FILTER[$i-1]}" -delete
+    find . -type d -empty -delete
+  done
 }
 
 function parse_options () {
+  KEEP_SOURCE_FILTER=()
+
   while true ; do
       case "$1" in
         --dockercommand)
@@ -46,8 +55,11 @@ function parse_options () {
         --sourcedirnum)
           SOURCE_DIR_NUM="$2"
           ;;
-        --keepfilter)
-          KEEP_FILTER="$2"
+        --keeptargetfilter)
+          KEEP_TARGET_FILTER="$2"
+          ;;
+        --keepsourcefilter)
+          KEEP_SOURCE_FILTER[${#KEEP_SOURCE_FILTER[@]}]="$2"
           ;;
         --*)
           if [[ $2 =~ ^--.* || -z $2 ]]; then
@@ -71,7 +83,6 @@ function parse_options () {
 }
 
 parse_options "$@"
-
 setup
 sync_dirs
 cd /application

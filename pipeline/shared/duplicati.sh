@@ -28,12 +28,11 @@ install_oem_files () {
 }
 
 function parse_duplicati_options () {
-  RELEASE_VERSION="2.0.4.$(cat "$DUPLICATI_ROOT"/Updates/build_version.txt)"
   RELEASE_TYPE="nightly"
 
   while true ; do
       case "$1" in
-      --version)
+      --releaseversion)
         RELEASE_VERSION="$2"
         ;;
       --releasetype)

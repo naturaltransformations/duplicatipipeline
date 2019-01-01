@@ -3,6 +3,8 @@ services: docker
 before_install:
   - sudo apt-get install moreutils
   - set -o pipefail
+before_script:
+  - ${TRAVIS_BUILD_DIR}/pipeline/shared/sync_repo.sh
 addons:
   coverity_scan:
     project:
@@ -22,10 +24,7 @@ env:
     - BUILD_DIR=${TRAVIS_BUILD_DIR}/.build
     - TEST_DIR=${TRAVIS_BUILD_DIR}/.test
     - ARCHIVE_DIR=${TRAVIS_BUILD_DIR}/.zip
-    - PACKAGE_DEBIAN_DIR=${TRAVIS_BUILD_DIR}/.package_debian
-    - PACKAGE_FEDORA_DIR=${TRAVIS_BUILD_DIR}/.package_fedora
-    - PACKAGE_SYNOLOGY_DIR=${TRAVIS_BUILD_DIR}/.package_synology
-    - PACKAGE_DOCKER_DIR=${TRAVIS_BUILD_DIR}/.package_docker
+    - PACKAGES_DIR=${TRAVIS_BUILD_DIR}/.packages
     - SIGN_DIR=${TRAVIS_BUILD_DIR}/.sign
     - UPLOAD_DIR=${TRAVIS_BUILD_DIR}/.upload
     - AUTO_UPDATE_KEY_FILE="/keys/autoupdate.key.aes"
@@ -49,11 +48,7 @@ jobs:
         directories:
           - $BUILD_DIR
       script:
-          - ${ROOT_DIR}/pipeline/shared/sync_repo.sh
-          - >
-            ${ROOT_DIR}/pipeline/stage_build/trigger.sh
-            --sourcedir "${ROOT_DIR}/duplicati"
-            --targetdir "${BUILD_DIR}" | ts
+        - ${ROOT_DIR}/pipeline/jobs/build_job.sh
 
 
     - stage: unit tests
@@ -62,60 +57,35 @@ jobs:
           - $HOME/download/
           - $BUILD_DIR
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcedir $BUILD_DIR
-          --targetdir $TEST_DIR
-          --testcategories BulkNormal
-          --testdata data.zip | ts
+        - ${ROOT_DIR}/pipeline/jobs/unittest1_job.sh
     - stage: unit tests
       cache:
         directories:
           - $HOME/download/
           - $BUILD_DIR
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcedir $BUILD_DIR
-          --targetdir $TEST_DIR
-          --testcategories BulkNoSize
-          --testdata data.zip | ts
+        - ${ROOT_DIR}/pipeline/jobs/unittest2_job.sh
     - stage: unit tests
       cache:
         directories:
           - $HOME/download/
           - $BUILD_DIR
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcedir $BUILD_DIR
-          --targetdir $TEST_DIR
-          --testcategories SVNDataLong,SVNData
-          --testdata DSMCBE.zip |  ts
+        - ${ROOT_DIR}/pipeline/jobs/unittest3_job.sh
     - stage: unit tests
       cache:
         directories:
           - $HOME/download/
           - $BUILD_DIR
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcedir $BUILD_DIR
-          --targetdir $TEST_DIR
-          --testcategories Border | ts
+        - ${ROOT_DIR}/pipeline/jobs/unittest4_job.sh
     - stage: unit tests
       cache:
         directories:
           - $HOME/download/
           - $BUILD_DIR
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_unittests/trigger.sh
-          --sourcedir $BUILD_DIR
-          --targetdir $TEST_DIR
-          --testcategories Filter,Targeted,Purge,Serialization,WebApi,Utility,UriUtility,IO | ts
-
-
+        - ${ROOT_DIR}/pipeline/jobs/unittest5_job.sh
 
     - stage: integration tests
       cache:
@@ -123,16 +93,11 @@ jobs:
           - $HOME/download/
           - $BUILD_DIR
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_integrationtests/trigger.sh
-          --sourcedir $BUILD_DIR
-          --targetdir $TEST_DIR | ts
+        - ${ROOT_DIR}/pipeline/jobs/selenium_job.sh
       addons:
         sauce_connect:
           username: $SAUCE_USERNAME
           access_key: $SAUCE_ACCESS_KEY
-
-
 
     - stage: create main package
       cache:
@@ -141,96 +106,35 @@ jobs:
           - $BUILD_DIR
         timeout: 1800
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_createarchive/trigger.sh
-          --sourcedir "${BUILD_DIR}"
-          --targetdir "${ARCHIVE_DIR}"
-          --keepfilter "./Updates/.*"
-          --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD"
-          --signingkeyfile "$AUTO_UPDATE_KEY_FILE" | ts
-
+        - ${ROOT_DIR}/pipeline/jobs/package_job.sh
 
     - stage: create platform packages
       cache:
         directories:
           - $BUILD_DIR
           - ${ARCHIVE_DIR}
-          - ${PACKAGE_DEBIAN_DIR}
-          - ${PACKAGE_FEDORA_DIR}
-          - ${PACKAGE_SYNOLOGY_DIR}
-          - ${PACKAGE_DOCKER_DIR}
+          - ${PACKAGES_DIR}
         timeout: 1800
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --installers debian
-          --sourcedir "${BUILD_DIR}"
-          --sourcedir "${ARCHIVE_DIR}"
-          --keepfilter "./Updates/.*target/.*"
-          --targetdir "${PACKAGE_DEBIAN_DIR}" | ts
-        - >
-          ${ROOT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcedir $BUILD_DIR
-          --sourcedir $ARCHIVE_DIR
-          --keepfilter "./Updates/.*target/.*"
-          --targetdir $PACKAGE_FEDORA_DIR
-          --installers fedora | ts
-        - >
-          ${ROOT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcedir $BUILD_DIR
-          --sourcedir $ARCHIVE_DIR
-          --keepfilter "./Updates/.*target/.*"
-          --targetdir $PACKAGE_SYNOLOGY_DIR
-          --installers synology | ts
-        - >
-          ${ROOT_DIR}/pipeline/stage_createinstallers/trigger.sh
-          --sourcedir $BUILD_DIR
-          --sourcedir $ARCHIVE_DIR
-          --keepfilter "./Updates/.*target/.*"
-          --targetdir $PACKAGE_DOCKER_DIR
-          --dockerrepo $DOCKER_REPO
-          --installers docker | ts
+        - ${ROOT_DIR}/pipeline/jobs/packages_job.sh
 
     - stage: sign binaries
       cache:
         directories:
           - $BUILD_DIR
-          - ${PACKAGE_DEBIAN_DIR}
-          - ${PACKAGE_FEDORA_DIR}
-          - ${PACKAGE_SYNOLOGY_DIR}
+          - ${PACKAGES_DIR}
           - ${SIGN_DIR}
         timeout: 1800
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_sign/trigger.sh
-          --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD"
-          --gpgcredentialsfile "$GPG_CREDENTIALS_FILE"
-          --gpgkeyfile "$GPG_KEY_FILE"
-          --sourcedir "${BUILD_DIR}"
-          --sourcedir "${PACKAGE_DEBIAN_DIR}"
-          --sourcedir "${PACKAGE_FEDORA_DIR}"
-          --sourcedir "${PACKAGE_SYNOLOGY_DIR}"
-          --keepfilter "./Updates/.*target/.*"
-          --targetdir "${SIGN_DIR}" | ts
-
+        - ${ROOT_DIR}/pipeline/jobs/sign_job.sh
 
     - stage: upload to docker and aws
       cache:
         directories:
           - $BUILD_DIR
-          - ${PACKAGE_DOCKER_DIR}
+          - ${PACKAGES_DIR}
           - ${SIGN_DIR}
         timeout: 1800
       script:
-        - >
-          ${ROOT_DIR}/pipeline/stage_deploy/trigger.sh
-          --awskeyid $AWS_ACCESS_KEY_ID
-          --awssecret $AWS_SECRET_ACCESS_KEY
-          --awsbucket $AWS_BUCKET_URI
-          --dockeruser $DOCKER_USER
-          --dockerpassword $DOCKER_PASSWORD
-          --dockerrepo $DOCKER_REPO
-          --sourcedir "${BUILD_DIR}"
-          --sourcedir "${SIGN_DIR}"
-          --sourcedir "${PACKAGE_DOCKER_DIR}"
-          --targetdir "${UPLOAD_DIR}" | ts
+        - ${ROOT_DIR}/pipeline/jobs/upload_job.sh
+

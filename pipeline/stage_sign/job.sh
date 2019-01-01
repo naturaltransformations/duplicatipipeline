@@ -58,6 +58,9 @@ function sign_binaries_with_authenticode  () {
 }
 
 function sign_with_authenticode () {
+	#	sign_with_authenticode "${UPDATE_TARGET}/${MSI64NAME}"
+  #	sign_with_authenticode "${UPDATE_TARGET}/${MSI32NAME}"
+
 
   #https://gist.github.com/trollixx/6abc5c3769c621ecc485
 	if [ ! -f "${AUTHENTICODE_PFXFILE}" ] || [ ! -f "${AUTHENTICODE_PASSWORD}" ]; then
@@ -67,7 +70,6 @@ function sign_with_authenticode () {
 
 	echo "Performing authenticode signing of installers"
 
-    get_keyfile_password
 
 	if [ "z${PFX_PASS}" == "z" ]; then
         PFX_PASS=$("${MONO}" "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/bin/Debug/SharpAESCrypt.exe" d "${KEYFILE_PASSWORD}" "${AUTHENTICODE_PASSWORD}")
@@ -121,9 +123,6 @@ function compute_hashes () {
 }
 
 function compute_binary_metainfo () {
-	#	sign_with_authenticode "${UPDATE_TARGET}/${MSI64NAME}"
-  #	sign_with_authenticode "${UPDATE_TARGET}/${MSI32NAME}"
-
 	SIG_FOLDER="duplicati-${BUILDTAG}-signatures"
 	mkdir -p "${SIG_FOLDER}"
 

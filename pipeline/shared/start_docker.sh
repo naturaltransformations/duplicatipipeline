@@ -82,7 +82,6 @@ function parse_options () {
       fi
   done
 
-  add_option "--gittag" "$(cd ${SOURCE_DIR[0]};git rev-parse --short HEAD)"
   add_option "--workingdir" "$TARGET_DIR"
   add_option "--sourcedirnum" ${#SOURCE_DIR[@]}
 }

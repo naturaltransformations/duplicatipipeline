@@ -14,3 +14,4 @@ function quit_on_error() {
 
 set -eE
 trap 'quit_on_error $LINENO' ERR
+set -o pipefail
