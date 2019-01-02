@@ -57,6 +57,26 @@ function sign_binaries_with_authenticode  () {
 	done
 }
 
+function sign_synology_package () {
+  synology_package="$1"
+
+  TMPRELEASE_NAME_SIMPLE="/tmp/synology_package"
+  mkdir "$TMPRELEASE_NAME_SIMPLE"
+  tar xf "$synology_package" -C "$TMPRELEASE_NAME_SIMPLE"
+  # Most sort do not have -V / --version-sort
+  # https://stackoverflow.com/questions/4493205/unix-sort-of-version-numbers
+  SORT_OPTIONS="-t. -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
+
+  cat $(find ${TMPRELEASE_NAME_SIMPLE} -type f | sort ${SORT_OPTIONS}) > "package.contents"
+  sign_with_gpg "package.contents"
+
+  TIMESERVER="http://timestamp.synology.com/timestamp.php"
+  curl --silent --form "file=@package.contents.sig" "${TIMESERVER}" > "${TMPRELEASE_NAME_SIMPLE}/syno_signature.asc"
+
+  mv "$synology_package" "$synology_package".bak
+  tar cf "$synology_package" -C "${TMPRELEASE_NAME_SIMPLE}" $(ls -1 ${TMPRELEASE_NAME_SIMPLE})
+}
+
 function sign_with_authenticode () {
 	#	sign_with_authenticode "${UPDATE_TARGET}/${MSI64NAME}"
   #	sign_with_authenticode "${UPDATE_TARGET}/${MSI32NAME}"
@@ -130,6 +150,11 @@ function compute_binary_metainfo () {
 
 	for file in $(ls ${UPDATE_TARGET}/*.{zip,spk,rpm,deb}); do
 		filename=$(basename "${file}")
+
+		if [ "${filename##*.}" == "spk" ]; then
+      sign_synology_package $file
+    fi
+
     compute_hashes $filename
     sign_with_gpg $file
 
