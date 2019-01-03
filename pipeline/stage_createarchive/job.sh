@@ -73,21 +73,15 @@ function parse_module_options () {
       --signingkeyfile)
         SIGNING_KEYFILE="$2"
         ;;
-      "" )
+      * )
         break
         ;;
       esac
       if [[ $2 =~ ^--.* || -z $2 ]]; then
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
         shift
       else
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
-        FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
         shift
         shift
-      fi
-      if [[ -z $1 ]]; then
-        break
       fi
   done
 }
