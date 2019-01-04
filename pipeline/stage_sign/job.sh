@@ -118,20 +118,20 @@ function sign_with_authenticode () {
 function sign_with_gpg () {
 	gpg_sign_options="\
 	 --inputfile=\"${1}\" \
-	 --gpgkeyfile=\"${GPG_CREDENTIALS_FILE}\" \
+	 --gpgkeyfile=\"${gpgcredentialsfile}\" \
 	 --keyfile-password=\"${SIGNING_KEYFILE_PASSWORD}\" \
-	 --gpgpath=\"${GPG_PATH}\" \
+	 --gpgpath=\"${gpgpath}\" \
 	"
 	mono "${DUPLICATI_ROOT}/BuildTools/GnupgSigningTool/bin/Release/GnupgSigningTool.exe" --signaturefile=\"${1}.sig\" $gpg_sign_options
 	mono "${DUPLICATI_ROOT}/BuildTools/GnupgSigningTool/bin/Release/GnupgSigningTool.exe" --signaturefile=\"${1}.sig.asc\" --armor $gpg_sign_options
 }
 
 function import_gpg_key () {
-  mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$SIGNING_KEYFILE_PASSWORD" "$GPG_KEY_FILE" |	"$GPG_PATH" --batch --import
+  mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$SIGNING_KEYFILE_PASSWORD" "$gpgkeyfile" |	"$gpgpath" --batch --import
 }
 
 function write_gpg_key_info () {
-  GPG_ID=$(mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$SIGNING_KEYFILE_PASSWORD" "$GPG_CREDENTIALS_FILE" | head -1)
+  GPG_ID=$(mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$SIGNING_KEYFILE_PASSWORD" "$gpgcredentialsfile" | head -1)
 	echo "${GPG_ID}" > "${SIG_FOLDER}/sign-key.txt"
 	echo "https://pgp.mit.edu/pks/lookup?op=get&search=${GPG_ID}" >> "${SIG_FOLDER}/sign-key.txt"
 }
@@ -175,36 +175,11 @@ function compute_binary_metainfo () {
 	echo ";" >> "${UPDATE_TARGET}/latest.js"
 }
 
-
-function parse_module_options () {
-  while true ; do
-      case "$1" in
-	    --gpgpath)
-   	  	GPG_PATH="$2"
-	  	  ;;
-  	  --gpgkeyfile)
-     		GPG_KEY_FILE="$2"
-	  	  ;;
-  	  --gpgcredentialsfile)
-     		GPG_CREDENTIALS_FILE="$2"
-	  	  ;;
-      * )
-        break
-        ;;
-      esac
-      if [[ $2 =~ ^--.* || -z $2 ]]; then
-        shift
-      else
-        shift
-        shift
-      fi
-  done
-
-  export GPG_TTY=$(tty)
-}
-
 parse_duplicati_options "$@"
-parse_module_options "${FORWARD_OPTS[@]}"
+get_value "gpgpath"
+get_value "gpgkeyfile"
+get_value "gpgcredentialsfile"
+export GPG_TTY=$(tty)
 
 travis_mark_begin "SIGNING BINARIES"
 import_gpg_key

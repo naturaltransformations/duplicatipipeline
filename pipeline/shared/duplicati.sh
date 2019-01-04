@@ -27,6 +27,21 @@ install_oem_files () {
     done
 }
 
+function get_value () {
+  option_found=false
+  for arg in ${FORWARD_OPTS[@]}; do
+
+    if [[ $option_found == true ]]; then
+      eval $1=$arg
+      return
+    elif [[ $arg == "--$1" ]]; then
+      option_found=true
+    elif [[ $arg == "-$1" ]]; then
+      eval $2=true
+    fi
+  done
+}
+
 function parse_duplicati_options () {
   RELEASE_TYPE="nightly"
 

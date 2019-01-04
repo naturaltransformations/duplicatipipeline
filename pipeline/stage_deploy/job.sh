@@ -3,14 +3,14 @@
 . /pipeline/shared/markers.sh
 
 function upload_to_aws() {
-	export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-	export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-	aws s3 cp "${UPDATE_TARGET}/" "${AWS_BUCKET_URI}/${RELEASE_TYPE}/" --recursive --exclude "docker.*"
+	export AWS_ACCESS_KEY_ID=$awskeyid
+	export AWS_SECRET_ACCESS_KEY=$awssecret
+	aws s3 cp "${UPDATE_TARGET}/" "${awsbucket}/${RELEASE_TYPE}/" --recursive --exclude "docker.*"
 }
 
 function push_docker () {
 	ARCHITECTURES="amd64 arm32v7"
-	echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USER" --password-stdin
+	echo "$dockerpassword" | docker login -u="$dockeruser" --password-stdin
 
 	for arch in $ARCHITECTURES; do
 		docker load -i ${UPDATE_TARGET}/docker.linux-${arch}.tar
@@ -23,39 +23,12 @@ function push_docker () {
 	done
 }
 
-function parse_module_options () {
-  while true ; do
-      case "$1" in
-      --awskeyid)
-        AWS_ACCESS_KEY_ID="$2"
-        ;;
-      --awssecret)
-        AWS_SECRET_ACCESS_KEY="$2"
-        ;;
-      --awsbucket)
-        AWS_BUCKET_URI="$2"
-        ;;
-  	  --dockeruser)
-				DOCKER_USER="$2"
-				;;
-      --dockerpassword)
-        DOCKER_PASSWORD="$2"
-        ;;
-      * )
-        break
-        ;;
-      esac
-      if [[ $2 =~ ^--.* || -z $2 ]]; then
-        shift
-      else
-        shift
-        shift
-      fi
-  done
-}
-
 parse_duplicati_options "$@"
-parse_module_options "${FORWARD_OPTS[@]}"
+get_value awskeyid
+get_value awssecret
+get_value awsbucket
+get_value dockeruser
+get_value dockerpassword
 
 travis_mark_begin "UPLOADING BINARIES"
 push_docker

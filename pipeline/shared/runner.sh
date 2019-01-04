@@ -69,11 +69,11 @@ function parse_options () {
             FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$2"
           fi
           ;;
-        * )
-          break
-          ;;
       esac
-      if [[ $2 =~ ^--.* || -z $2 ]]; then
+
+      if [[ -z $1 ]]; then
+        break
+      elif [[ $2 =~ ^--.* || -z $2 ]]; then
         shift
       else
         shift

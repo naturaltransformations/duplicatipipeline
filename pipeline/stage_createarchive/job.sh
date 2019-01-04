@@ -21,7 +21,7 @@ function generate_package () {
 	--displayname=\"${RELEASE_NAME}\" \
 	--remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${RELEASE_VERSION}\" --allow-new-key=true \
 	--keyfile-password=\"${SIGNING_KEYFILE_PASSWORD}\" \
-	--keyfile=\"${SIGNING_KEYFILE}\" \
+	--keyfile=\"${signingkeyfile}\" \
 	"
 	mono "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/bin/Release/AutoUpdateBuilder.exe" $auto_update_options
 
@@ -67,27 +67,8 @@ function prepare_update_source_folder () {
 	rm -rf "${UPDATE_SOURCE}/"*.mdb "${UPDATE_SOURCE}/"*.pdb "${UPDATE_SOURCE}/"*.xml
 }
 
-function parse_module_options () {
-  while true ; do
-      case "$1" in
-      --signingkeyfile)
-        SIGNING_KEYFILE="$2"
-        ;;
-      * )
-        break
-        ;;
-      esac
-      if [[ $2 =~ ^--.* || -z $2 ]]; then
-        shift
-      else
-        shift
-        shift
-      fi
-  done
-}
-
-parse_module_options "$@"
-parse_duplicati_options "${FORWARD_OPTS[@]}"
+parse_duplicati_options "$@"
+get_value "signingkeyfile"
 
 travis_mark_begin "BUILDING ZIP"
 update_version_files
