@@ -1,4 +1,4 @@
 [submodule "duplicati"]
     path = duplicati
-    url = https://github.com/verhoek/duplicati.git
-    branch=nightly_builds
+    url = https://github.com/duplicati/duplicati.git
+    branch=master
