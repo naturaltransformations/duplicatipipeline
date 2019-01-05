@@ -17,8 +17,6 @@ function start_test () {
     python /application/guiTests/guiTest.py
 }
 
-parse_duplicati_options "$@"
-
 travis_mark_begin "INTEGRATION TESTING"
 start_test
 travis_mark_end "INTEGRATION TESTING"

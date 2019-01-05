@@ -4,23 +4,23 @@
 
 function update_version_files() {
 	echo "${RELEASE_NAME}" > "${DUPLICATI_ROOT}/Duplicati/License/VersionTag.txt"
-	echo "${RELEASE_TYPE}" > "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateBuildChannel.txt"
-	UPDATE_MANIFEST_URLS="https://updates.duplicati.com/${RELEASE_TYPE}/latest.manifest;https://alt.updates.duplicati.com/${RELEASE_TYPE}/latest.manifest"
+	echo "${releasetype}" > "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateBuildChannel.txt"
+	UPDATE_MANIFEST_URLS="https://updates.duplicati.com/${releasetype}/latest.manifest;https://alt.updates.duplicati.com/${releasetype}/latest.manifest"
 	echo "${UPDATE_MANIFEST_URLS}" > "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateURL.txt"
 	cp "${DUPLICATI_ROOT}/Updates/release_key.txt"  "${DUPLICATI_ROOT}/Duplicati/Library/AutoUpdater/AutoUpdateSignKey.txt"
 }
 
 function generate_package () {
-	UPDATE_ZIP_URLS="https://updates.duplicati.com/${RELEASE_TYPE}/${RELEASE_FILE_NAME}.zip;https://alt.updates.duplicati.com/${RELEASE_TYPE}/${RELEASE_FILE_NAME}.zip"
+	UPDATE_ZIP_URLS="https://updates.duplicati.com/${releasetype}/${RELEASE_FILE_NAME}.zip;https://alt.updates.duplicati.com/${releasetype}/${RELEASE_FILE_NAME}.zip"
 
 	mkdir -p "${UPDATE_TARGET}"
 
 	auto_update_options="\
   --input=\"${UPDATE_SOURCE}\" --output=\"${UPDATE_TARGET}\"  \
-	--manifest=${DUPLICATI_ROOT}/Updates/${RELEASE_TYPE}.manifest --changeinfo=\"${RELEASE_CHANGEINFO}\" \
+	--manifest=${DUPLICATI_ROOT}/Updates/${releasetype}.manifest --changeinfo=\"${RELEASE_CHANGEINFO}\" \
 	--displayname=\"${RELEASE_NAME}\" \
-	--remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${RELEASE_VERSION}\" --allow-new-key=true \
-	--keyfile-password=\"${SIGNING_KEYFILE_PASSWORD}\" \
+	--remoteurls=\"${UPDATE_ZIP_URLS}\" --version=\"${releaseversion}\" --allow-new-key=true \
+	--keyfile-password=\"${signingkeyfilepassword}\" \
 	--keyfile=\"${signingkeyfile}\" \
 	"
 	mono "${DUPLICATI_ROOT}/BuildTools/AutoUpdateBuilder/bin/Release/AutoUpdateBuilder.exe" $auto_update_options
@@ -66,9 +66,6 @@ function prepare_update_source_folder () {
 	# Clean debug files, if any
 	rm -rf "${UPDATE_SOURCE}/"*.mdb "${UPDATE_SOURCE}/"*.pdb "${UPDATE_SOURCE}/"*.xml
 }
-
-parse_duplicati_options "$@"
-get_value "signingkeyfile"
 
 travis_mark_begin "BUILDING ZIP"
 update_version_files

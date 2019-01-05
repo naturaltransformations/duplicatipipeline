@@ -119,7 +119,7 @@ function sign_with_gpg () {
 	gpg_sign_options="\
 	 --inputfile=\"${1}\" \
 	 --gpgkeyfile=\"${gpgcredentialsfile}\" \
-	 --keyfile-password=\"${SIGNING_KEYFILE_PASSWORD}\" \
+	 --keyfile-password=\"${signingkeyfilepassword}\" \
 	 --gpgpath=\"${gpgpath}\" \
 	"
 	mono "${DUPLICATI_ROOT}/BuildTools/GnupgSigningTool/bin/Release/GnupgSigningTool.exe" --signaturefile=\"${1}.sig\" $gpg_sign_options
@@ -127,11 +127,11 @@ function sign_with_gpg () {
 }
 
 function import_gpg_key () {
-  mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$SIGNING_KEYFILE_PASSWORD" "$gpgkeyfile" |	"$gpgpath" --batch --import
+  mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$signingkeyfilepassword" "$gpgkeyfile" |	"$gpgpath" --batch --import
 }
 
 function write_gpg_key_info () {
-  GPG_ID=$(mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$SIGNING_KEYFILE_PASSWORD" "$gpgcredentialsfile" | head -1)
+  GPG_ID=$(mono /application/BuildTools/AutoUpdateBuilder/bin/Release/SharpAESCrypt.exe d "$signingkeyfilepassword" "$gpgcredentialsfile" | head -1)
 	echo "${GPG_ID}" > "${SIG_FOLDER}/sign-key.txt"
 	echo "https://pgp.mit.edu/pks/lookup?op=get&search=${GPG_ID}" >> "${SIG_FOLDER}/sign-key.txt"
 }
@@ -175,10 +175,6 @@ function compute_binary_metainfo () {
 	echo ";" >> "${UPDATE_TARGET}/latest.js"
 }
 
-parse_duplicati_options "$@"
-get_value "gpgpath"
-get_value "gpgkeyfile"
-get_value "gpgcredentialsfile"
 export GPG_TTY=$(tty)
 
 travis_mark_begin "SIGNING BINARIES"

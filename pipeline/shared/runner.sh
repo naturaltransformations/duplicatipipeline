@@ -82,9 +82,28 @@ function parse_options () {
   done
 }
 
+function set_user_script_vars () {
+  option_found=false
+  for arg in ${FORWARD_OPTS[@]}; do
+    if [[ $option_found == true ]]; then
+      eval $option=$arg
+      export $option
+      option_found=false
+    elif [[ $arg =~ ^--.* ]]; then
+      option_found=true
+      option=${arg#"--"}
+    elif [[ $arg =~ ^-.* ]]; then
+      flag=${arg#"-"}
+      eval $flag=true
+      export $flag
+    fi
+  done
+}
+
 parse_options "$@"
 setup
 sync_dirs
 cd /application
+set_user_script_vars
 $DOCKER_COMMAND "${FORWARD_OPTS[@]}"
 clean_up

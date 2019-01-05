@@ -5,7 +5,7 @@
 function upload_to_aws() {
 	export AWS_ACCESS_KEY_ID=$awskeyid
 	export AWS_SECRET_ACCESS_KEY=$awssecret
-	aws s3 cp "${UPDATE_TARGET}/" "${awsbucket}/${RELEASE_TYPE}/" --recursive --exclude "docker.*"
+	aws s3 cp "${UPDATE_TARGET}/" "${awsbucket}/${releasetype}/" --recursive --exclude "docker.*"
 }
 
 function push_docker () {
@@ -14,21 +14,14 @@ function push_docker () {
 
 	for arch in $ARCHITECTURES; do
 		docker load -i ${UPDATE_TARGET}/docker.linux-${arch}.tar
-		loaded_tag=linux-${arch}-${RELEASE_TYPE}
-   	tags="linux-${arch}-${RELEASE_VERSION} linux-${arch}-${RELEASE_TYPE}"
+		loaded_tag=linux-${arch}-${releasetype}
+   	tags="linux-${arch}-${releaseversion} linux-${arch}-${releasetype}"
 		for tag in $tags; do
-			docker tag ${DOCKER_REPO}:${loaded_tag} ${DOCKER_REPO}:${tag}
-      docker push ${DOCKER_REPO}:${tag}
+			docker tag ${dockerrepo}:${loaded_tag} ${dockerrepo}:${tag}
+      docker push ${dockerrepo}:${tag}
 		done
 	done
 }
-
-parse_duplicati_options "$@"
-get_value awskeyid
-get_value awssecret
-get_value awsbucket
-get_value dockeruser
-get_value dockerpassword
 
 travis_mark_begin "UPLOADING BINARIES"
 push_docker
