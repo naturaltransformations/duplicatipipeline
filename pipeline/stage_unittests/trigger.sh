@@ -1,9 +1,7 @@
 #!/bin/bash
-SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/error_handling.sh"
+. error_handling.sh
 
 PACKAGES="wget unzip rsync"
-"${SCRIPT_DIR}/../shared/start_docker.sh" "$@" \
---dockerimage mono \
---dockerpackages "$PACKAGES" \
---dockercommand "/pipeline/stage_unittests/job.sh"
+docker-run --image mono \
+--packages "$PACKAGES" \
+--command "/pipeline/stage_unittests/job.sh" "$@"

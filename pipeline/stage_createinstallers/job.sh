@@ -1,6 +1,6 @@
 #!/bin/bash
+. /pipeline/docker-run/markers.sh
 . /pipeline/shared/duplicati.sh
-. /pipeline/shared/markers.sh
 
 function build_docker_installer () {
     installer_dir="${DUPLICATI_ROOT}/Installer/Docker/"

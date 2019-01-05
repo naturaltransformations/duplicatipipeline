@@ -35,7 +35,7 @@ function run_with_docker () {
   add_volumes
 
   docker run ${volume_args[@]} \
-  --privileged $DOCKER_AS_ROOT --rm $DOCKER_IMAGE "/pipeline/shared/runner.sh" "${FORWARD_OPTS[@]}"
+  --privileged $DOCKER_AS_ROOT --rm $DOCKER_IMAGE "/pipeline/docker-run/runner.sh" "${FORWARD_OPTS[@]}"
 }
 
 function parse_options () {
@@ -44,7 +44,7 @@ function parse_options () {
 
   while true ; do
       case "$1" in
-      --dockerimage)
+      --image)
         DOCKER_IMAGE="$2"
         ;;
       --sourcedir)
@@ -53,13 +53,13 @@ function parse_options () {
       --targetdir)
         TARGET_DIR="$2"
         ;;
-      --dockerasroot)
+      --asroot)
         DOCKER_AS_ROOT="-u 0"
         ;;
-      --dockermountkeys)
+      --mountkeys)
         DOCKER_MOUNT_KEYS="-v $( cd "$(dirname "$0")" ; pwd -P )/../../keys:/keys"
         ;;
-      --dockersharedmem)
+      --sharedmem)
         DOCKER_SHARED_MEM="-v /dev/shm:/dev/shm"
         ;;
       --*)

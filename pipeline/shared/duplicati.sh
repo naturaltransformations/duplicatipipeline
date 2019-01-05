@@ -1,5 +1,5 @@
 #!/bin/bash
-. "$( cd "$(dirname "$0")" ; pwd -P )/../shared/error_handling.sh"
+. "$( cd "$(dirname "$0")" ; pwd -P )/../docker-run/error_handling.sh"
 
 export DUPLICATI_ROOT="/application/"
 declare -a FORWARD_OPTS

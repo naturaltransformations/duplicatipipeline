@@ -46,10 +46,10 @@ function parse_options () {
 
   while true ; do
       case "$1" in
-        --dockercommand)
+        --command)
           DOCKER_COMMAND="$2"
           ;;
-        --dockerpackages)
+        --packages)
           DOCKER_PACKAGES="$2"
           ;;
         --sourcedirnum)

@@ -1,6 +1,6 @@
 #!/bin/bash
+. /pipeline/docker-run/markers.sh
 . /pipeline/shared/duplicati.sh
-. /pipeline/shared/markers.sh
 
 function upload_to_aws() {
 	export AWS_ACCESS_KEY_ID=$awskeyid

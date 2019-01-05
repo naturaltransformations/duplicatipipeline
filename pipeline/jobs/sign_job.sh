@@ -7,6 +7,7 @@ ${ROOT_DIR}/pipeline/stage_sign/trigger.sh \
 ${FORWARD_OPTS[@]} \
 --signingkeyfilepassword "$SIGNING_KEY_FILE_PASSWORD" \
 --gpgcredentialsfile "$GPG_CREDENTIALS_FILE" \
+--gpgpath "/usr/bin/gpg" \
 --gpgkeyfile "$GPG_KEY_FILE" \
 --sourcedir "${BUILD_DIR}" \
 --sourcedir "${PACKAGES_DIR}" \

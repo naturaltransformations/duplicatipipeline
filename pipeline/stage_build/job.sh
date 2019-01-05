@@ -1,5 +1,5 @@
 #!/bin/bash
-. /pipeline/shared/markers.sh
+. /pipeline/docker-run/markers.sh
 . /pipeline/shared/duplicati.sh
 
 function build () {

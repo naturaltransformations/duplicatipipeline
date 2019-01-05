@@ -1,6 +1,6 @@
 #!/bin/bash
+. /pipeline/docker-run/markers.sh
 . /pipeline/shared/duplicati.sh
-. /pipeline/shared/markers.sh
 
 function start_test () {
     pip install selenium
