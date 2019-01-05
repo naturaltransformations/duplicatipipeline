@@ -1,0 +1,2 @@
+FROM ubuntu:latest
+RUN apt-get -y update && apt-get install -y qemu-user qemu-user-static unzip rsync bzip2 docker.io

@@ -1,0 +1,3 @@
+FROM ubuntu:latest
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update && apt-get install -y zip rsync coreutils perl mono-complete gpg curl

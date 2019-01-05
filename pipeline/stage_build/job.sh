@@ -28,8 +28,6 @@ function build () {
   cp -r "${DUPLICATI_ROOT}"/Duplicati/Server/webroot "${DUPLICATI_ROOT}"/Duplicati/GUI/Duplicati.GUI.TrayIcon/bin/Release/webroot
 }
 
-parse_duplicati_options "$@"
-
 travis_mark_begin "BUILDING BINARIES"
 build
 travis_mark_end "BUILDING BINARIES"
