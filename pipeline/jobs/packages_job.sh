@@ -1,6 +1,5 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-. "${SCRIPT_DIR}/../shared/error_handling.sh"
 . "${SCRIPT_DIR}/params.sh"
 
 ${ROOT_DIR}/pipeline/stage_createinstallers/trigger.sh \

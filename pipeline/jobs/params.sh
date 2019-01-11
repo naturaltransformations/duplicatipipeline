@@ -1,5 +1,6 @@
 #!/bin/bash
-
+SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+. "${SCRIPT_DIR}/../docker-run/error_handling.sh"
 
 function add_option () {
   FORWARD_OPTS[${#FORWARD_OPTS[@]}]="$1"
