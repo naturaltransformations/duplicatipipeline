@@ -16,9 +16,7 @@ function start_test () {
 
     for CAT in $(echo $testcategories | sed "s/,/ /g")
     do
-        # prepare dirs
-        if [ ! -d ~/tmp ]; then mkdir ~/tmp; fi
-        if [ ! -d ~/download/"${CAT}" ]; then mkdir -p ~/download/"${CAT}"; fi
+        mkdir -p ~/download/"${CAT}"
         export UNITTEST_BASEFOLDER=~/duplicati_testdata/"${CAT}"
         rm -rf ${UNITTEST_BASEFOLDER} && mkdir -p ${UNITTEST_BASEFOLDER}
 
