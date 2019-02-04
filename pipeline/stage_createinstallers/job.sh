@@ -5,22 +5,20 @@
 function build_docker_installer () {
     installer_dir="${DUPLICATI_ROOT}/Installer/Docker/"
     ARCHITECTURES="amd64 arm32v7"
-    DEFAULT_ARCHITECTURE=amd64
-    DEFAULT_releasetype=beta
+    DEFAULT_ARCHITECTURE="amd64"
 
     unzip -qd "${installer_dir}/${RELEASE_NAME_SIMPLE}" "$ZIPFILE"
 
     cp -a /usr/bin/qemu-arm-static ${installer_dir}
 
     for arch in ${ARCHITECTURES}; do
-        tags="linux-${arch}-${releaseversion} linux-${arch}-${releasetype}"
-        if [ ${releasetype} = ${DEFAULT_releasetype} ]; then
-            tags="linux-${arch}-latest ${tags}"
-        fi
-        if [ ${arch} = ${DEFAULT_ARCHITECTURE} ]; then
+        tags="linux-${arch}-${releaseversion} linux-${arch}-${releasetype} linux-${arch}-latest"
+
+        if [[ ${arch} == ${DEFAULT_ARCHITECTURE} ]]; then
             tags="${releaseversion} ${releasetype} ${tags}"
         fi
-        if [ ${releasetype} = ${DEFAULT_releasetype} -a ${arch} = ${DEFAULT_ARCHITECTURE} ]; then
+
+        if [[ ${arch} == ${DEFAULT_ARCHITECTURE} ]]; then
             tags="latest ${tags}"
         fi
 
