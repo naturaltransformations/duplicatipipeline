@@ -5,37 +5,21 @@
 function build_docker_installer () {
     installer_dir="${DUPLICATI_ROOT}/Installer/Docker/"
     ARCHITECTURES="amd64 arm32v7"
-    DEFAULT_ARCHITECTURE="amd64"
 
     unzip -qd "${installer_dir}/${RELEASE_NAME_SIMPLE}" "$ZIPFILE"
 
     cp -a /usr/bin/qemu-arm-static ${installer_dir}
 
     for arch in ${ARCHITECTURES}; do
-        tags="linux-${arch}-${releaseversion} linux-${arch}-${releasetype} linux-${arch}-latest"
-
-        if [[ ${arch} == ${DEFAULT_ARCHITECTURE} ]]; then
-            tags="${releaseversion} ${releasetype} ${tags}"
-        fi
-
-        if [[ ${arch} == ${DEFAULT_ARCHITECTURE} ]]; then
-            tags="latest ${tags}"
-        fi
-
-        args=""
-        for tag in ${tags}; do
-            args="-t ${dockerrepo}:${tag} ${args}"
-        done
-
         docker build \
-            ${args} \
+            -t ${dockerrepo}:linux-${arch} \
             --build-arg ARCH=${arch}/ \
             --build-arg releaseversion=${releaseversion} \
             --build-arg releasetype=${releasetype} \
             --build-arg RELEASE_NAME_SIMPLE=${RELEASE_NAME_SIMPLE} \
             --file "${installer_dir}"/context/Dockerfile \
             ${installer_dir}
-        docker save ${dockerrepo}:linux-${arch}-${releasetype} > ${UPDATE_TARGET}/docker.linux-${arch}.tar
+        docker save ${dockerrepo}:linux-${arch} > ${UPDATE_TARGET}/docker.linux-${arch}.tar
     done
 }
 
@@ -156,7 +140,7 @@ function build_synology_installer () {
 
 
 for type in $(echo $installers | sed "s/,/ /g"); do
-  travis_mark_begin "BUILDING SYNOLOGY PACKAGE"
+  travis_mark_begin "BUILDING $type PACKAGE"
 	build_${type}_installer
-  travis_mark_end "BUILDING SYNOLOGY PACKAGE"
+  travis_mark_end "BUILDING $type PACKAGE"
 done

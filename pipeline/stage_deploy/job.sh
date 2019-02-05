@@ -27,13 +27,19 @@ function aws_upload() {
 }
 
 function push_docker () {
-	ARCHITECTURES="amd64 arm32v7"
+  DEFAULT_ARCHITECTURE="amd64"
+  ARCHITECTURES="amd64 arm32v7"
 	echo "$dockerpassword" | docker login -u="$dockeruser" --password-stdin
 
 	for arch in $ARCHITECTURES; do
 		docker load -i ${UPDATE_TARGET}/docker.linux-${arch}.tar
-		loaded_tag=linux-${arch}-${releasetype}
-   	tags="linux-${arch}-${releaseversion} linux-${arch}-${releasetype}"
+    loaded_tag=linux-${arch}
+
+   	tags="linux-${arch}-${releaseversion} linux-${arch}-${releasetype} linux-${arch}-latest"
+    if [[ ${arch} == ${DEFAULT_ARCHITECTURE} ]]; then
+        tags="latest ${releaseversion} ${releasetype} ${tags}"
+    fi
+
 		for tag in $tags; do
 			docker tag ${dockerrepo}:${loaded_tag} ${dockerrepo}:${tag}
       docker push ${dockerrepo}:${tag}
