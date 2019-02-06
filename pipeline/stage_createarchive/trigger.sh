@@ -4,5 +4,5 @@
 PACKAGES="rsync"
 docker-run --image mono \
 --packages "$PACKAGES" \
---mountkeys \
+--volume $( cd "$(dirname "$0")" ; pwd -P )/../../keys:/keys \
 --command "/pipeline/stage_createarchive/job.sh" "$@"

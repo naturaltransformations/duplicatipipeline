@@ -18,7 +18,7 @@ function add_volumes () {
 
   volume_args[${#volume_args[@]}]="-v /var/run/docker.sock:/var/run/docker.sock \
   -v ${TARGET_DIR}:/application \
-  ${DOCKER_MOUNT_KEYS} \
+  ${DOCKER_VOLUME} \
   -v $( cd "$(dirname "$0")" ; pwd -P )/../:/pipeline ${DOCKER_SHARED_MEM}"
 
   for (( i=1; i<${#SOURCE_DIR[@]}+1; i++ )); do
@@ -56,8 +56,8 @@ function parse_options () {
       --asroot)
         DOCKER_AS_ROOT="-u 0"
         ;;
-      --mountkeys)
-        DOCKER_MOUNT_KEYS="-v $( cd "$(dirname "$0")" ; pwd -P )/../../keys:/keys"
+      --volume)
+        DOCKER_VOLUME="-v $2"
         ;;
       --sharedmem)
         DOCKER_SHARED_MEM="-v /dev/shm:/dev/shm"
